@@ -1,0 +1,149 @@
+<div class="bookings-container">
+  <!-- Header -->
+  <mat-toolbar color="primary" class="bookings-header">
+    <button mat-icon-button (click)="goBack()">
+      <mat-icon>arrow_back</mat-icon>
+    </button>
+    <span class="header-title">My Bookings</span>
+  </mat-toolbar>
+
+  <!-- Loading State -->
+  <div class="loading-container" *ngIf="isLoading">
+    <mat-spinner diameter="50"></mat-spinner>
+    <p>Loading your bookings...</p>
+  </div>
+
+  <!-- Content -->
+  <div class="content-wrapper" *ngIf="!isLoading">
+    <!-- No Bookings State -->
+    <div class="no-bookings" *ngIf="bookings.length === 0">
+      <mat-icon>book_online</mat-icon>
+      <h2>No Bookings Yet</h2>
+      <p>You haven't made any bus bookings yet. Start exploring and book your first trip!</p>
+      <button mat-raised-button color="primary" (click)="goBack()">
+        <mat-icon>search</mat-icon>
+        Browse Buses
+      </button>
+    </div>
+
+    <!-- Bookings List -->
+    <div class="bookings-list" *ngIf="bookings.length > 0">
+      <mat-card *ngFor="let booking of bookings" class="booking-card" [class.cancelled]="booking.status === 'Cancelled'">
+        <mat-card-content>
+          <div class="booking-layout">
+            <!-- Left: Booking Details -->
+            <div class="booking-details">
+              <div class="booking-header">
+                <div class="bus-info">
+                  <h3>{{booking.busName}}</h3>
+                  <p class="bus-number">{{booking.busNumber}}</p>
+                  <p class="operator">{{booking.operatorName}}</p>
+                </div>
+                <mat-chip [color]="getStatusColor(booking.status)" class="status-chip">
+                  <mat-icon *ngIf="booking.status === 'Cancelled'">cancel</mat-icon>
+                  <mat-icon *ngIf="booking.status === 'Confirmed'">check_circle</mat-icon>
+                  <mat-icon *ngIf="booking.status === 'Completed'">done_all</mat-icon>
+                  {{booking.status}}
+                </mat-chip>
+              </div>
+
+              <div class="route-info">
+                <div class="route-point">
+                  <mat-icon>trip_origin</mat-icon>
+                  <span>{{booking.source}}</span>
+                </div>
+                <mat-icon class="route-arrow">arrow_forward</mat-icon>
+                <div class="route-point">
+                  <mat-icon>location_on</mat-icon>
+                  <span>{{booking.destination}}</span>
+                </div>
+              </div>
+
+              <div class="booking-info-grid">
+                <div class="info-item">
+                  <mat-icon>event_seat</mat-icon>
+                  <div class="info-content">
+                    <span class="label">Seats</span>
+                    <span class="value">{{booking.seatNumbers.join(', ')}}</span>
+                  </div>
+                </div>
+
+                <div class="info-item">
+                  <mat-icon>person</mat-icon>
+                  <div class="info-content">
+                    <span class="label">Passenger</span>
+                    <span class="value">{{booking.passengerName}}</span>
+                  </div>
+                </div>
+
+                <div class="info-item">
+                  <mat-icon>calendar_today</mat-icon>
+                  <div class="info-content">
+                    <span class="label">Booking Date</span>
+                    <span class="value">{{booking.bookingDate | date: 'MMM dd, yyyy'}}</span>
+                  </div>
+                </div>
+
+                <div class="info-item">
+                  <mat-icon>event</mat-icon>
+                  <div class="info-content">
+                    <span class="label">Journey Date</span>
+                    <span class="value">{{booking.journeyDate | date: 'MMM dd, yyyy'}}</span>
+                  </div>
+                </div>
+
+                <div class="info-item">
+                  <mat-icon>email</mat-icon>
+                  <div class="info-content">
+                    <span class="label">Email</span>
+                    <span class="value">{{booking.passengerEmail}}</span>
+                  </div>
+                </div>
+
+                <div class="info-item">
+                  <mat-icon>phone</mat-icon>
+                  <div class="info-content">
+                    <span class="label">Phone</span>
+                    <span class="value">{{booking.passengerPhone}}</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Right: Price & Actions -->
+            <div class="booking-actions">
+              <div class="price-section">
+                <span class="price-label">Total Amount</span>
+                <span class="price-value">₹{{booking.totalAmount}}</span>
+              </div>
+
+              <div class="action-buttons">
+                <button 
+                  mat-raised-button 
+                  color="warn" 
+                  (click)="cancelBooking(booking)"
+                  *ngIf="booking.status === 'Confirmed'">
+                  <mat-icon>cancel</mat-icon>
+                  Cancel Booking
+                </button>
+
+                <div class="cancelled-info" *ngIf="booking.status === 'Cancelled'">
+                  <mat-icon>info</mat-icon>
+                  <div class="cancelled-text">
+                    <strong>Booking Cancelled</strong>
+                    <p>Refund will be processed within 5-7 business days</p>
+                  </div>
+                </div>
+
+                <button mat-stroked-button color="primary">
+                  <mat-icon>download</mat-icon>
+                  Download Ticket
+                </button>
+              </div>
+            </div>
+          </div>
+        </mat-card-content>
+      </mat-card>
+    </div>
+  </div>
+</div>

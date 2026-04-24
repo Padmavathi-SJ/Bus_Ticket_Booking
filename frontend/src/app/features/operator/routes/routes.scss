@@ -1,0 +1,54 @@
+@use '../../admin/routes/routes.scss' as *;
+
+.layout-preview-section {
+  margin-top: 32px; padding: 24px; background: #f8fafc; border-radius: 16px; border: 1px solid #e2e8f0;
+  h3 { margin-bottom: 24px; color: #1e293b; font-weight: 700; text-align: center; }
+}
+
+.bus-container {
+  max-width: 500px; margin: 0 auto; background: white; border: 3px solid #64748b; border-radius: 40px 40px 10px 10px;
+  padding: 32px 16px; position: relative; box-shadow: 0 20px 25px -5px rgba(0,0,0,0.1);
+}
+
+.driver-cabin {
+  display: flex; flex-direction: column; align-items: center; margin-bottom: 32px; color: #94a3b8;
+  border-bottom: 2px dashed #e2e8f0; padding-bottom: 16px;
+  mat-icon { font-size: 32px; width: 32px; height: 32px; }
+}
+
+.seat-grid { display: flex; flex-direction: column; gap: 12px; align-items: center; }
+.layout-row { display: flex; gap: 12px; align-items: center; }
+
+.aisle-gap { width: 30px; } /* Center Aisle */
+
+.seat-box {
+  width: 40px; height: 40px; background: #e2e8f0; color: #1e293b; border-radius: 6px;
+  display: flex; align-items: center; justify-content: center; font-size: 12px; font-weight: 700;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.05); transition: all 0.2s;
+  
+  &.female { background: #fce7f3; color: #9d174d; border: 2px solid #f9a8d4; }
+  &.male { background: #e0f2fe; color: #075985; border: 2px solid #7dd3fc; }
+  &.general { background: #f8fafc; color: #64748b; border: 1px solid #e2e8f0; }
+  &.empty { background: transparent; border: 1px dashed #cbd5e1; box-shadow: none; color: transparent; }
+}
+
+.legend-section {
+  display: flex; gap: 24px; justify-content: center; margin-bottom: 24px;
+  .legend-item { display: flex; align-items: center; gap: 8px; font-size: 13px; font-weight: 600; color: #64748b; }
+  .box { width: 20px; height: 20px; border-radius: 4px; 
+    &.female { background: #fce7f3; border: 1px solid #f9a8d4; }
+    &.male { background: #e0f2fe; border: 1px solid #7dd3fc; }
+    &.general { background: #f8fafc; border: 1px solid #e2e8f0; }
+  }
+}
+
+.route-panel {
+  mat-expansion-panel-header {
+    background: white;
+    &:hover { background: #f8fafc; }
+  }
+}
+
+.add-hint-icon {
+  color: #38bdf8 !important;
+}

@@ -1,0 +1,109 @@
+.page-container {
+  padding: 32px;
+}
+
+.page-header {
+  margin-bottom: 24px;
+  h1 {
+    font-size: 28px;
+    font-weight: 700;
+    color: #0f172a;
+    margin-bottom: 8px;
+  }
+  p {
+    color: #64748b;
+  }
+}
+
+.operator-tabs {
+  margin-bottom: 24px;
+
+  ::ng-deep .mat-mdc-tab {
+    font-weight: 600;
+  }
+}
+
+.data-card {
+  border-radius: 12px;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+  overflow: hidden;
+  border: none;
+
+  mat-card-content {
+    padding: 0 !important;
+  }
+}
+
+.full-width-table {
+  width: 100%;
+
+  th.mat-header-cell {
+    background: #f8fafc;
+    font-weight: 600;
+    color: #475569;
+    padding: 16px;
+  }
+
+  td.mat-cell {
+    padding: 16px;
+    color: #334155;
+  }
+
+  .license-badge {
+    background: #f0f9ff;
+    color: #0369a1;
+    padding: 4px 10px;
+    border-radius: 6px;
+    font-size: 12px;
+    font-weight: 600;
+  }
+
+  mat-chip {
+    font-size: 11px;
+    font-weight: 600;
+    --mdc-chip-label-text-color: white;
+    
+    &.status-1 { --mdc-chip-container-color: #fbbf24; } // Pending
+    &.status-2 { --mdc-chip-container-color: #10b981; } // Approved
+    &.status-3 { --mdc-chip-container-color: #6b7280; } // Disabled
+    &.status-4 { --mdc-chip-container-color: #ef4444; } // Rejected
+  }
+
+  .action-buttons {
+    display: flex;
+    gap: 4px;
+  }
+
+  .empty-state {
+    text-align: center;
+    padding: 64px !important;
+    color: #94a3b8;
+
+    mat-icon {
+      font-size: 48px;
+      height: 48px;
+      width: 48px;
+      margin-bottom: 16px;
+    }
+  }
+}
+
+.loading-overlay {
+  position: absolute;
+  top: 0; left: 0; right: 0; bottom: 0;
+  background: rgba(255,255,255,0.7);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 10;
+}
+
+.spinner {
+  width: 32px; height: 32px;
+  border: 3px solid #f3f3f3;
+  border-top: 3px solid #38bdf8;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin { to { transform: rotate(360deg); } }

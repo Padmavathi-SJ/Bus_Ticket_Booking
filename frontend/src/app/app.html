@@ -1,0 +1,28 @@
+<mat-toolbar color="primary" class="main-header" *ngIf="showMainHeader">
+  <div class="header-container">
+    <div class="brand" routerLink="/">
+      <mat-icon>directions_bus</mat-icon>
+      <span>BusExpress</span>
+    </div>
+
+    <div class="spacer"></div>
+
+    <div class="nav-actions">
+      <ng-container *ngIf="!isLoggedIn">
+        <button mat-button routerLink="/user_login">LOGIN</button>
+        <button mat-raised-button color="warn" routerLink="/user_register">REGISTER</button>
+      </ng-container>
+
+      <ng-container *ngIf="isLoggedIn">
+        <button mat-button routerLink="/customer/dashboard">MY BOOKINGS</button>
+        <button mat-icon-button (click)="logout()" matTooltip="Logout">
+          <mat-icon>logout</mat-icon>
+        </button>
+      </ng-container>
+    </div>
+  </div>
+</mat-toolbar>
+
+<main [class.has-header]="showMainHeader">
+  <router-outlet></router-outlet>
+</main>

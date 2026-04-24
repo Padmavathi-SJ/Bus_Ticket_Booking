@@ -1,0 +1,35 @@
+.main-header {
+  position: fixed; top: 0; left: 0; right: 0; z-index: 9999;
+  height: 72px; background: #1e293b !important; color: white !important;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.3);
+  display: flex !important; align-items: center;
+}
+
+.header-container {
+  max-width: 1400px; width: 100%; margin: 0 auto;
+  display: flex; align-items: center; padding: 0 32px;
+}
+
+.brand {
+  display: flex; align-items: center; gap: 12px; cursor: pointer;
+  mat-icon { font-size: 32px; width: 32px; height: 32px; color: #ef4444; }
+  span { font-size: 26px; font-weight: 800; letter-spacing: -1px; }
+}
+
+.spacer { flex: 1 1 auto; }
+
+.nav-actions {
+  display: flex; align-items: center; gap: 16px;
+  button { font-weight: 700; color: white; }
+  .mat-mdc-raised-button.mat-warn { background-color: #ef4444; color: white; }
+}
+
+main.has-header {
+  padding-top: 72px;
+}
+
+// Global scrollbar styling
+::-webkit-scrollbar { width: 8px; }
+::-webkit-scrollbar-track { background: #f1f5f9; }
+::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 4px; }
+::-webkit-scrollbar-thumb:hover { background: #94a3b8; }

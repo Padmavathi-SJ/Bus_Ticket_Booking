@@ -1,0 +1,16 @@
+F:\Bus_Booking_System\backend\BusBooking.Application\bin\Debug\net10.0\BusBooking.Application.deps.json
+F:\Bus_Booking_System\backend\BusBooking.Application\bin\Debug\net10.0\BusBooking.Application.dll
+F:\Bus_Booking_System\backend\BusBooking.Application\bin\Debug\net10.0\BusBooking.Application.pdb
+F:\Bus_Booking_System\backend\BusBooking.Application\obj\Debug\net10.0\BusBooking.Application.csproj.AssemblyReference.cache
+F:\Bus_Booking_System\backend\BusBooking.Application\obj\Debug\net10.0\BusBooking.Application.GeneratedMSBuildEditorConfig.editorconfig
+F:\Bus_Booking_System\backend\BusBooking.Application\obj\Debug\net10.0\BusBooking.Application.AssemblyInfoInputs.cache
+F:\Bus_Booking_System\backend\BusBooking.Application\obj\Debug\net10.0\BusBooking.Application.AssemblyInfo.cs
+F:\Bus_Booking_System\backend\BusBooking.Application\obj\Debug\net10.0\BusBooking.Application.csproj.CoreCompileInputs.cache
+F:\Bus_Booking_System\backend\BusBooking.Application\obj\Debug\net10.0\BusBooking.Application.dll
+F:\Bus_Booking_System\backend\BusBooking.Application\obj\Debug\net10.0\refint\BusBooking.Application.dll
+F:\Bus_Booking_System\backend\BusBooking.Application\obj\Debug\net10.0\BusBooking.Application.pdb
+F:\Bus_Booking_System\backend\BusBooking.Application\obj\Debug\net10.0\ref\BusBooking.Application.dll
+F:\Bus_Booking_System\backend\BusBooking.Application\bin\Debug\net10.0\BusBooking.Domain.dll
+F:\Bus_Booking_System\backend\BusBooking.Application\bin\Debug\net10.0\BusBooking.Domain.pdb
+F:\Bus_Booking_System\backend\BusBooking.Application\obj\Debug\net10.0\BusBooki.BAC9D9F4.Up2Date
+F:\Bus_Booking_System\backend\BusBooking.Application\obj\Debug\net10.0\BusBooking.Application.sourcelink.json

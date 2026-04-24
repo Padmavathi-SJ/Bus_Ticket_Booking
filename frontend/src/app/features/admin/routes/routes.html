@@ -1,0 +1,133 @@
+<div class="page-container">
+  <div class="page-header">
+    <div class="title-section">
+      <h1>Route & Bus Management</h1>
+      <p>Define routes and assign buses directly to them.</p>
+    </div>
+    <button mat-raised-button color="primary" (click)="showAddForm = !showAddForm">
+      <mat-icon>{{showAddForm ? 'close' : 'add'}}</mat-icon>
+      {{showAddForm ? 'Cancel' : 'Add New Route'}}
+    </button>
+  </div>
+
+  <!-- Add Route Form -->
+  <mat-card class="form-card" *ngIf="showAddForm">
+    <mat-card-header>
+      <mat-card-title>Create New Route</mat-card-title>
+    </mat-card-header>
+    <mat-card-content>
+      <form [formGroup]="routeForm" (ngSubmit)="onSubmit()" class="route-form">
+        <mat-form-field appearance="outline">
+          <mat-label>Route Name (e.g. Mumbai-Pune Express)</mat-label>
+          <input matInput formControlName="name" placeholder="Enter route name">
+        </mat-form-field>
+
+        <div class="form-row">
+          <mat-form-field appearance="outline">
+            <mat-label>Source (City/Place)</mat-label>
+            <input matInput formControlName="source" placeholder="e.g. Mumbai">
+          </mat-form-field>
+
+          <mat-form-field appearance="outline">
+            <mat-label>Destination (City/Place)</mat-label>
+            <input matInput formControlName="destination" placeholder="e.g. Pune">
+          </mat-form-field>
+        </div>
+
+        <mat-form-field appearance="outline">
+          <mat-label>Distance (Km)</mat-label>
+          <input matInput type="number" formControlName="distanceKm">
+        </mat-form-field>
+
+        <div class="form-actions">
+          <button mat-raised-button color="primary" type="submit" [disabled]="routeForm.invalid">Create Route</button>
+        </div>
+      </form>
+    </mat-card-content>
+  </mat-card>
+
+  <!-- Routes List with Expansion Panels -->
+  <div class="routes-list">
+    <div *ngIf="routes.length === 0 && !isLoading" class="empty-state">
+      <mat-icon>map</mat-icon>
+      <h3>No routes found</h3>
+      <p>Start by creating your first route.</p>
+    </div>
+
+    <mat-accordion multi="false">
+      <mat-expansion-panel *ngFor="let route of routes" class="route-panel">
+        <mat-expansion-panel-header>
+          <mat-panel-title>
+            <mat-icon class="route-icon">directions_bus</mat-icon>
+            <strong>{{route.name}}</strong>
+          </mat-panel-title>
+          <mat-panel-description>
+            {{route.source}} → {{route.destination}} ({{route.distanceKm}} Km)
+            <span class="status-badge" [class.active]="route.isActive">
+              {{route.isActive ? 'Active' : 'Inactive'}}
+            </span>
+            <mat-icon class="add-hint-icon" matTooltip="Add Bus to this Route">library_add</mat-icon>
+          </mat-panel-description>
+        </mat-expansion-panel-header>
+
+        <div class="panel-content">
+          <div class="section-header">
+            <h3>Add Bus to this Route</h3>
+            <p>Enter the details of the bus that will operate on this route.</p>
+          </div>
+
+          <form [formGroup]="busForm" (ngSubmit)="onAddBus(route.id)" class="bus-form">
+            <div class="form-grid">
+              <mat-form-field appearance="outline">
+                <mat-label>Bus Name</mat-label>
+                <input matInput formControlName="busName" placeholder="e.g. Volvo Multi-Axle">
+              </mat-form-field>
+
+              <mat-form-field appearance="outline">
+                <mat-label>Bus Number</mat-label>
+                <input matInput formControlName="busNumber" placeholder="e.g. MH-12-AB-1234">
+              </mat-form-field>
+
+              <mat-form-field appearance="outline">
+                <mat-label>Bus Type</mat-label>
+                <mat-select formControlName="busType">
+                  <mat-option value="AC Seater">AC Seater</mat-option>
+                  <mat-option value="Non-AC Seater">Non-AC Seater</mat-option>
+                  <mat-option value="AC Sleeper">AC Sleeper</mat-option>
+                  <mat-option value="Non-AC Sleeper">Non-AC Sleeper</mat-option>
+                  <mat-option value="AC Semi-Sleeper">AC Semi-Sleeper</mat-option>
+                </mat-select>
+              </mat-form-field>
+
+              <mat-form-field appearance="outline">
+                <mat-label>Total Seats</mat-label>
+                <input matInput type="number" formControlName="totalSeats">
+              </mat-form-field>
+
+              <mat-form-field appearance="outline">
+                <mat-label>Base Price (₹)</mat-label>
+                <input matInput type="number" formControlName="basePrice">
+              </mat-form-field>
+
+              <mat-form-field appearance="outline">
+                <mat-label>Amenities (Comma separated)</mat-label>
+                <input matInput formControlName="amenities">
+              </mat-form-field>
+            </div>
+
+            <div class="form-actions">
+              <button mat-raised-button color="accent" type="submit" [disabled]="busForm.invalid">
+                <mat-icon>add</mat-icon>
+                Register Bus for this Route
+              </button>
+            </div>
+          </form>
+        </div>
+      </mat-expansion-panel>
+    </mat-accordion>
+  </div>
+
+  <div *ngIf="isLoading" class="loading-overlay">
+    <div class="spinner"></div>
+  </div>
+</div>

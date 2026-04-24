@@ -1,0 +1,88 @@
+<div class="auth-container">
+  <div class="glass-card operator-card">
+    <div class="brand-header">
+      <mat-icon class="brand-icon">business</mat-icon>
+      <h1>Partner with Us</h1>
+      <p>Register as a Bus Operator and grow your business.</p>
+    </div>
+
+    <form [formGroup]="operatorForm" (ngSubmit)="onSubmit()" class="auth-form">
+      
+      <div class="form-row">
+        <mat-form-field appearance="outline" class="full-width">
+          <mat-label>Owner's Full Name</mat-label>
+          <input matInput formControlName="fullName" placeholder="John Doe">
+          <mat-icon matPrefix>person</mat-icon>
+        </mat-form-field>
+
+        <mat-form-field appearance="outline" class="full-width">
+          <mat-label>Email Address</mat-label>
+          <input matInput type="email" formControlName="email">
+          <mat-icon matPrefix>email</mat-icon>
+        </mat-form-field>
+      </div>
+
+      <div class="form-row">
+        <mat-form-field appearance="outline" class="full-width">
+          <mat-label>Phone Number</mat-label>
+          <input matInput formControlName="phone">
+          <mat-icon matPrefix>phone</mat-icon>
+        </mat-form-field>
+        
+        <mat-form-field appearance="outline" class="full-width">
+          <mat-label>Company Name</mat-label>
+          <input matInput formControlName="companyName" placeholder="Fast Travels Ltd">
+          <mat-icon matPrefix>corporate_fare</mat-icon>
+        </mat-form-field>
+      </div>
+
+      <div class="form-row">
+        <mat-form-field appearance="outline" class="full-width">
+          <mat-label>License Number</mat-label>
+          <input matInput formControlName="licenseNumber">
+          <mat-icon matPrefix>badge</mat-icon>
+        </mat-form-field>
+      </div>
+
+      <mat-form-field appearance="outline" class="full-width">
+        <mat-label>Business Address</mat-label>
+        <textarea matInput formControlName="address" rows="2"></textarea>
+      </mat-form-field>
+
+      <div class="form-row">
+        <mat-form-field appearance="outline" class="full-width">
+          <mat-label>Password</mat-label>
+          <input matInput [type]="hidePassword ? 'password' : 'text'" formControlName="password">
+          <mat-icon matPrefix>lock</mat-icon>
+          <button mat-icon-button matSuffix (click)="hidePassword = !hidePassword" type="button">
+            <mat-icon>{{hidePassword ? 'visibility_off' : 'visibility'}}</mat-icon>
+          </button>
+        </mat-form-field>
+
+        <mat-form-field appearance="outline" class="full-width">
+          <mat-label>Confirm Password</mat-label>
+          <input matInput type="password" formControlName="confirmPassword">
+          <mat-icon matPrefix>lock_outline</mat-icon>
+          <mat-error *ngIf="operatorForm.hasError('mismatch')">Passwords do not match</mat-error>
+        </mat-form-field>
+      </div>
+
+      <div class="error-message" *ngIf="errorMessage">
+        <mat-icon>error_outline</mat-icon>
+        {{ errorMessage }}
+      </div>
+
+      <button mat-flat-button color="accent" type="submit" class="submit-btn operator-btn" [disabled]="operatorForm.invalid || isLoading">
+        <span *ngIf="!isLoading">Submit Application</span>
+        <span *ngIf="isLoading" class="loader"></span>
+      </button>
+
+      <div class="login-prompt">
+        Already registered? <a routerLink="/login">Sign In</a>
+      </div>
+      <div class="operator-prompt">
+        Looking to book a bus? <a routerLink="/register">Register as Customer</a>
+      </div>
+    </form>
+  </div>
+</div>

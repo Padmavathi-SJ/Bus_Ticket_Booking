@@ -1,0 +1,151 @@
+.page-container {
+  padding: 32px;
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+.page-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 32px;
+
+  h1 { font-size: 28px; font-weight: 700; margin: 0 0 4px; color: #0f172a; }
+  p { color: #64748b; margin: 0; }
+}
+
+.form-card {
+  margin-bottom: 32px;
+  border-radius: 16px;
+  box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+  animation: slideDown 0.3s ease-out;
+
+  mat-card-header { padding: 16px 24px; border-bottom: 1px solid #f1f5f9; }
+}
+
+.route-form {
+  padding: 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+
+  .form-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+  }
+
+  .form-actions {
+    display: flex;
+    justify-content: flex-end;
+    margin-top: 8px;
+  }
+}
+
+.routes-list {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.route-panel {
+  border-radius: 12px !important;
+  margin-bottom: 12px;
+  overflow: hidden;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1) !important;
+  border: 1px solid #f1f5f9;
+
+  mat-expansion-panel-header {
+    height: 80px !important;
+    padding: 0 24px !important;
+  }
+
+  .route-icon {
+    margin-right: 12px;
+    color: #38bdf8;
+  }
+
+  .status-badge {
+    padding: 4px 12px;
+    border-radius: 20px;
+    font-size: 12px;
+    font-weight: 600;
+    background: #fee2e2;
+    color: #ef4444;
+    margin-left: 12px;
+
+    &.active {
+      background: #dcfce7;
+      color: #10b981;
+    }
+  }
+
+  .add-hint-icon {
+    margin-left: auto;
+    color: #94a3b8;
+    transition: color 0.2s;
+    &:hover { color: #38bdf8; }
+  }
+}
+
+.panel-content {
+  padding: 24px;
+  background: #f8fafc;
+  border-top: 1px solid #f1f5f9;
+
+  .section-header {
+    margin-bottom: 24px;
+    h3 { margin: 0 0 4px; font-weight: 700; color: #1e293b; }
+    p { margin: 0; color: #64748b; font-size: 14px; }
+  }
+}
+
+.bus-form {
+  .form-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: 16px;
+  }
+
+  .form-actions {
+    display: flex;
+    justify-content: flex-end;
+    margin-top: 16px;
+  }
+}
+
+.empty-state {
+  text-align: center;
+  padding: 64px;
+  background: white;
+  border-radius: 16px;
+  border: 2px dashed #e2e8f0;
+  color: #64748b;
+
+  mat-icon { font-size: 48px; width: 48px; height: 48px; margin-bottom: 16px; color: #94a3b8; }
+  h3 { margin: 0 0 8px; font-weight: 600; }
+  p { margin: 0; }
+}
+
+@keyframes slideDown {
+  from { opacity: 0; transform: translateY(-20px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.loading-overlay {
+  position: fixed;
+  top: 0; left: 0; right: 0; bottom: 0;
+  background: rgba(255,255,255,0.7);
+  display: flex; align-items: center; justify-content: center;
+  z-index: 1000;
+}
+
+.spinner {
+  width: 32px; height: 32px;
+  border: 3px solid #f3f3f3;
+  border-top: 3px solid #38bdf8;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin { to { transform: rotate(360deg); } }

@@ -1,0 +1,46 @@
+.auth-container {
+  min-height: 100vh; background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%);
+  display: flex; align-items: center; justify-content: center; padding: 40px 20px;
+}
+
+.auth-card {
+  max-width: 600px; width: 100%; padding: 40px; border-radius: 24px; border: none;
+  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.1); background: white;
+}
+
+.auth-header {
+  text-align: center; margin-bottom: 40px;
+  .brand-icon { font-size: 48px; width: 48px; height: 48px; color: #ef4444; margin-bottom: 16px; }
+  h1 { font-size: 32px; font-weight: 800; color: #1e293b; margin-bottom: 8px; }
+  p { color: #64748b; font-size: 16px; }
+}
+
+.form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 0 20px; }
+
+mat-form-field { width: 100%; margin-bottom: 8px; }
+
+.terms-container {
+  margin: 16px 0 32px; padding: 12px; background: #f8fafc; border-radius: 12px;
+  ::ng-deep .mdc-label { font-size: 14px; color: #64748b; }
+  .terms-link { color: #ef4444; font-weight: 700; text-decoration: none; &:hover { text-decoration: underline; } }
+}
+
+.submit-btn {
+  width: 100%; height: 56px; border-radius: 14px; font-size: 16px; font-weight: 700;
+  margin-bottom: 24px; background: linear-gradient(to right, #ef4444, #dc2626);
+}
+
+.error-message {
+  background: #fee2e2; color: #991b1b; padding: 12px; border-radius: 8px;
+  margin-bottom: 24px; font-size: 14px; text-align: center; font-weight: 600;
+}
+
+.auth-footer {
+  text-align: center; color: #64748b; font-size: 14px;
+  a { color: #ef4444; font-weight: 700; text-decoration: none; &:hover { text-decoration: underline; } }
+}
+
+@media (max-width: 600px) {
+  .form-grid { grid-template-columns: 1fr; }
+  .auth-card { padding: 32px 24px; }
+}

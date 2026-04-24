@@ -1,0 +1,77 @@
+<div class="page-container">
+  <div class="page-header">
+    <div class="title-section">
+      <h1>Station Management</h1>
+      <p>Manage pickup and drop-off points across the network.</p>
+    </div>
+    <button mat-raised-button color="primary" (click)="showAddForm = !showAddForm">
+      <mat-icon>{{showAddForm ? 'close' : 'add'}}</mat-icon>
+      {{showAddForm ? 'Cancel' : 'Add Station'}}
+    </button>
+  </div>
+
+  <mat-card class="form-card" *ngIf="showAddForm">
+    <mat-card-header>
+      <mat-card-title>Add New Station</mat-card-title>
+    </mat-card-header>
+    <mat-card-content>
+      <form [formGroup]="stationForm" (ngSubmit)="onSubmit()" class="station-form">
+        <div class="form-grid">
+          <mat-form-field appearance="outline">
+            <mat-label>Station Name</mat-label>
+            <input matInput formControlName="name">
+          </mat-form-field>
+          <mat-form-field appearance="outline">
+            <mat-label>Station Code (e.g. MUM-01)</mat-label>
+            <input matInput formControlName="code">
+          </mat-form-field>
+          <mat-form-field appearance="outline">
+            <mat-label>City</mat-label>
+            <input matInput formControlName="city">
+          </mat-form-field>
+          <mat-form-field appearance="outline">
+            <mat-label>State</mat-label>
+            <input matInput formControlName="state">
+          </mat-form-field>
+        </div>
+        <div class="form-actions">
+          <button mat-raised-button color="primary" type="submit" [disabled]="stationForm.invalid">Add Station</button>
+        </div>
+      </form>
+    </mat-card-content>
+  </mat-card>
+
+  <mat-card class="data-card">
+    <mat-card-content>
+      <table mat-table [dataSource]="stations" class="full-width-table">
+        <ng-container matColumnDef="name">
+          <th mat-header-cell *matHeaderCellDef>Station Name</th>
+          <td mat-cell *matCellDef="let station"><strong>{{station.name}}</strong></td>
+        </ng-container>
+        <ng-container matColumnDef="city">
+          <th mat-header-cell *matHeaderCellDef>City</th>
+          <td mat-cell *matCellDef="let station">{{station.city}}</td>
+        </ng-container>
+        <ng-container matColumnDef="state">
+          <th mat-header-cell *matHeaderCellDef>State</th>
+          <td mat-cell *matCellDef="let station">{{station.state}}</td>
+        </ng-container>
+        <ng-container matColumnDef="code">
+          <th mat-header-cell *matHeaderCellDef>Code</th>
+          <td mat-cell *matCellDef="let station"><code>{{station.code}}</code></td>
+        </ng-container>
+        <ng-container matColumnDef="status">
+          <th mat-header-cell *matHeaderCellDef>Status</th>
+          <td mat-cell *matCellDef="let station">
+            <span class="status-badge active">Active</span>
+          </td>
+        </ng-container>
+        <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
+        <tr mat-row *matRowDef="let row; columns: displayedColumns;"></tr>
+      </table>
+      <div *ngIf="isLoading" class="loading-overlay">
+        <div class="spinner"></div>
+      </div>
+    </mat-card-content>
+  </mat-card>
+</div>

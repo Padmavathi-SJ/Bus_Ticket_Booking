@@ -1,0 +1,21 @@
+.page-container { padding: 32px; }
+.page-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 32px;
+  h1 { font-size: 28px; font-weight: 700; color: #0f172a; margin-bottom: 4px; }
+  p { color: #64748b; }
+}
+.form-card { margin-bottom: 32px; border-radius: 12px;
+  mat-card-header { padding: 16px 24px; border-bottom: 1px solid #f1f5f9; }
+}
+.station-form { padding: 24px;
+  .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+  .form-actions { display: flex; justify-content: flex-end; margin-top: 16px; }
+}
+.data-card { border-radius: 12px; overflow: hidden; mat-card-content { padding: 0 !important; } }
+.full-width-table { width: 100%;
+  th { background: #f8fafc; padding: 16px !important; color: #475569; font-weight: 600; }
+  td { padding: 16px !important; color: #334155; }
+}
+.status-badge { background: #dcfce7; color: #166534; padding: 4px 10px; border-radius: 6px; font-size: 12px; font-weight: 600; }
+.loading-overlay { position: absolute; top: 0; left: 0; right: 0; bottom: 0; background: rgba(255,255,255,0.7); display: flex; align-items: center; justify-content: center; }
+.spinner { width: 32px; height: 32px; border: 3px solid #f3f3f3; border-top: 3px solid #38bdf8; border-radius: 50%; animation: spin 1s linear infinite; }
+@keyframes spin { to { transform: rotate(360deg); } }

@@ -1,0 +1,29 @@
+@use '../register/register.scss' as *;
+
+.operator-card {
+  max-width: 600px;
+}
+
+.brand-icon {
+  color: #ff9800 !important;
+}
+
+.form-row {
+  display: flex;
+  gap: 16px;
+  width: 100%;
+
+  mat-form-field {
+    flex: 1;
+  }
+
+  @media (max-width: 550px) {
+    flex-direction: column;
+    gap: 0;
+  }
+}
+
+.operator-btn {
+  background: linear-gradient(135deg, #f57c00 0%, #ffb74d 100%) !important;
+  color: #fff !important;
+}

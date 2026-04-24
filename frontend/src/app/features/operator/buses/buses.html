@@ -1,0 +1,753 @@
+<div class="page-container">
+  <div class="page-header">
+    <div class="title-section">
+      <h1>My Fleet Management</h1>
+      <p>Monitor your active buses and track registration requests.</p>
+    </div>
+  </div>
+
+  <mat-tab-group class="operator-tabs">
+    <!-- 1. Active Buses -->
+    <mat-tab>
+      <ng-template mat-tab-label>
+        <mat-icon class="tab-icon">check_circle</mat-icon>
+        Active Fleet
+      </ng-template>
+
+      <div class="tab-content">
+        <div class="bus-grid" *ngIf="activeBuses.length > 0">
+          <mat-card *ngFor="let bus of activeBuses" class="bus-card">
+            <mat-card-content>
+              <div class="bus-header">
+                <span class="bus-name">{{bus.busName}}</span>
+                <span class="status-badge approved">Active</span>
+              </div>
+              <div class="bus-details">
+                <p><mat-icon>confirmation_number</mat-icon> {{bus.busNumber}}</p>
+                <p><mat-icon>map</mat-icon> {{bus.routeName}}</p>
+                <p><mat-icon>event_seat</mat-icon> {{bus.totalSeats}} Seats</p>
+              </div>
+              
+              <div class="bus-actions">
+                <button mat-raised-button color="primary" class="schedule-btn" (click)="openScheduleDialog(bus)">
+                  <mat-icon>event</mat-icon>
+                  Schedule Trip
+                </button>
+                
+                <button mat-raised-button color="accent" class="view-schedules-btn" (click)="openTripsDialog(bus)">
+                  <mat-icon>calendar_view_month</mat-icon>
+                  View Schedules
+                </button>
+                
+                <button mat-raised-button class="view-bookings-btn" (click)="openBookingsDialog(bus)">
+                  <mat-icon>receipt_long</mat-icon>
+                  View Bookings
+                </button>
+                
+                <button mat-stroked-button color="primary" class="view-layout-btn" (click)="toggleBusDetails(bus.id)">
+                  <mat-icon>{{expandedBusId === bus.id ? 'expand_less' : 'expand_more'}}</mat-icon>
+                  {{expandedBusId === bus.id ? 'Hide' : 'View'}} Seat Layout
+                </button>
+              </div>
+
+              <!-- Seat Layout Section -->
+              <div class="seat-layout-section" *ngIf="expandedBusId === bus.id">
+                <div class="seat-stats">
+                  <div class="stat-item">
+                    <mat-icon>event_seat</mat-icon>
+                    <span>Total: {{bus.totalSeats}}</span>
+                  </div>
+                  <div class="stat-item female">
+                    <mat-icon>female</mat-icon>
+                    <span>Female: {{bus.femaleSeats}}</span>
+                  </div>
+                  <div class="stat-item male">
+                    <mat-icon>male</mat-icon>
+                    <span>Male: {{bus.maleSeats}}</span>
+                  </div>
+                  <div class="stat-item general">
+                    <mat-icon>people</mat-icon>
+                    <span>General: {{bus.totalSeats - bus.femaleSeats - bus.maleSeats}}</span>
+                  </div>
+                </div>
+
+                <div class="seat-legend">
+                  <div class="legend-item">
+                    <div class="seat-icon female-seat"></div>
+                    <span>Female</span>
+                  </div>
+                  <div class="legend-item">
+                    <div class="seat-icon male-seat"></div>
+                    <span>Male</span>
+                  </div>
+                  <div class="legend-item">
+                    <div class="seat-icon general-seat"></div>
+                    <span>General</span>
+                  </div>
+                </div>
+
+                <div class="bus-layout">
+                  <div class="driver-section">
+                    <mat-icon>drive_eta</mat-icon>
+                    <span>Driver</span>
+                  </div>
+
+                  <div class="seats-grid">
+                    <div class="seat-row" *ngFor="let row of generateSeatLayout(bus.totalSeats, bus.femaleSeats, bus.maleSeats); let rowIndex = index">
+                      <span class="row-number">{{rowIndex + 1}}</span>
+                      
+                      <div class="seats-container">
+                        <div 
+                          *ngFor="let seat of row; let colIndex = index"
+                          class="seat-display"
+                          [class.female-seat]="seat.type === 'female'"
+                          [class.male-seat]="seat.type === 'male'"
+                          [class.general-seat]="seat.type === 'general'"
+                          [class.aisle-gap]="colIndex === 1">
+                          <mat-icon>event_seat</mat-icon>
+                          <span class="seat-number">{{seat.number}}</span>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </mat-card-content>
+          </mat-card>
+        </div>
+
+        <div *ngIf="activeBuses.length === 0 && !isLoading" class="empty-state">
+          <mat-icon>directions_bus</mat-icon>
+          <h3>No active buses</h3>
+          <p>Your approved buses will appear here once the admin confirms your requests.</p>
+        </div>
+      </div>
+    </mat-tab>
+
+    <!-- 2. All History -->
+    <mat-tab>
+      <ng-template mat-tab-label>
+        <mat-icon class="tab-icon">history</mat-icon>
+        Submission History
+      </ng-template>
+
+      <div class="tab-content">
+        <div class="bus-grid" *ngIf="allBuses.length > 0">
+          <mat-card *ngFor="let bus of allBuses" class="bus-card">
+            <mat-card-content>
+              <div class="bus-header">
+                <span class="bus-name">{{bus.busName}}</span>
+                <span class="status-badge" [class]="getStatusLabel(bus.status).toLowerCase()">
+                  {{getStatusLabel(bus.status)}}
+                </span>
+              </div>
+              <div class="bus-details">
+                <p><mat-icon>confirmation_number</mat-icon> {{bus.busNumber}}</p>
+                <p><mat-icon>map</mat-icon> {{bus.routeName}}</p>
+                <p><mat-icon>event_seat</mat-icon> {{bus.totalSeats}} Seats</p>
+              </div>
+              <div class="rejection-box" *ngIf="bus.status === 4">
+                <strong>Reason:</strong> {{bus.rejectionReason || 'Contact Admin'}}
+              </div>
+
+              <button mat-stroked-button color="primary" class="view-layout-btn" (click)="toggleBusDetails(bus.id)">
+                <mat-icon>{{expandedBusId === bus.id ? 'expand_less' : 'expand_more'}}</mat-icon>
+                {{expandedBusId === bus.id ? 'Hide' : 'View'}} Seat Layout
+              </button>
+
+              <!-- Seat Layout Section -->
+              <div class="seat-layout-section" *ngIf="expandedBusId === bus.id">
+                <div class="seat-stats">
+                  <div class="stat-item">
+                    <mat-icon>event_seat</mat-icon>
+                    <span>Total: {{bus.totalSeats}}</span>
+                  </div>
+                  <div class="stat-item female">
+                    <mat-icon>female</mat-icon>
+                    <span>Female: {{bus.femaleSeats}}</span>
+                  </div>
+                  <div class="stat-item male">
+                    <mat-icon>male</mat-icon>
+                    <span>Male: {{bus.maleSeats}}</span>
+                  </div>
+                  <div class="stat-item general">
+                    <mat-icon>people</mat-icon>
+                    <span>General: {{bus.totalSeats - bus.femaleSeats - bus.maleSeats}}</span>
+                  </div>
+                </div>
+
+                <div class="seat-legend">
+                  <div class="legend-item">
+                    <div class="seat-icon female-seat"></div>
+                    <span>Female</span>
+                  </div>
+                  <div class="legend-item">
+                    <div class="seat-icon male-seat"></div>
+                    <span>Male</span>
+                  </div>
+                  <div class="legend-item">
+                    <div class="seat-icon general-seat"></div>
+                    <span>General</span>
+                  </div>
+                </div>
+
+                <div class="bus-layout">
+                  <div class="driver-section">
+                    <mat-icon>drive_eta</mat-icon>
+                    <span>Driver</span>
+                  </div>
+
+                  <div class="seats-grid">
+                    <div class="seat-row" *ngFor="let row of generateSeatLayout(bus.totalSeats, bus.femaleSeats, bus.maleSeats); let rowIndex = index">
+                      <span class="row-number">{{rowIndex + 1}}</span>
+                      
+                      <div class="seats-container">
+                        <div 
+                          *ngFor="let seat of row; let colIndex = index"
+                          class="seat-display"
+                          [class.female-seat]="seat.type === 'female'"
+                          [class.male-seat]="seat.type === 'male'"
+                          [class.general-seat]="seat.type === 'general'"
+                          [class.aisle-gap]="colIndex === 1">
+                          <mat-icon>event_seat</mat-icon>
+                          <span class="seat-number">{{seat.number}}</span>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </mat-card-content>
+          </mat-card>
+        </div>
+
+        <div *ngIf="allBuses.length === 0 && !isLoading" class="empty-state">
+          <mat-icon>assignment</mat-icon>
+          <h3>No submissions yet</h3>
+          <p>Register your first bus in the "Available Routes" section.</p>
+        </div>
+      </div>
+    </mat-tab>
+  </mat-tab-group>
+
+  <div *ngIf="isLoading" class="loading-overlay">
+    <div class="spinner"></div>
+  </div>
+
+  <!-- Trip Schedule Dialog -->
+  <div class="schedule-dialog-overlay" *ngIf="showScheduleDialog" (click)="closeScheduleDialog()">
+    <div class="schedule-dialog" (click)="$event.stopPropagation()">
+      <div class="dialog-header">
+        <h2>
+          <mat-icon>event</mat-icon>
+          Schedule Trip for {{selectedBus?.busName}}
+        </h2>
+        <button mat-icon-button (click)="closeScheduleDialog()">
+          <mat-icon>close</mat-icon>
+        </button>
+      </div>
+
+      <div class="dialog-content">
+        <form [formGroup]="tripForm" class="trip-form">
+          <!-- Date Selection -->
+          <div class="form-section">
+            <h3>
+              <mat-icon>calendar_today</mat-icon>
+              Select Trip Date
+            </h3>
+            <mat-form-field appearance="outline" class="full-width">
+              <mat-label>Trip Date</mat-label>
+              <input matInput [matDatepicker]="picker" formControlName="tripDate" [min]="minDate">
+              <mat-datepicker-toggle matSuffix [for]="picker"></mat-datepicker-toggle>
+              <mat-datepicker #picker></mat-datepicker>
+              <mat-error *ngIf="tripForm.get('tripDate')?.hasError('required')">
+                Trip date is required
+              </mat-error>
+            </mat-form-field>
+          </div>
+
+          <!-- Route Details -->
+          <div class="form-section">
+            <h3>
+              <mat-icon>map</mat-icon>
+              Route Information
+            </h3>
+            <div class="form-row">
+              <mat-form-field appearance="outline" class="half-width">
+                <mat-label>Source Address</mat-label>
+                <mat-icon matPrefix>trip_origin</mat-icon>
+                <input matInput formControlName="sourceAddress" placeholder="e.g., Mumbai Central Station">
+                <mat-error *ngIf="tripForm.get('sourceAddress')?.hasError('required')">
+                  Source address is required
+                </mat-error>
+                <mat-error *ngIf="tripForm.get('sourceAddress')?.hasError('minlength')">
+                  Minimum 3 characters required
+                </mat-error>
+              </mat-form-field>
+
+              <mat-form-field appearance="outline" class="half-width">
+                <mat-label>Destination Address</mat-label>
+                <mat-icon matPrefix>location_on</mat-icon>
+                <input matInput formControlName="destinationAddress" placeholder="e.g., Pune Railway Station">
+                <mat-error *ngIf="tripForm.get('destinationAddress')?.hasError('required')">
+                  Destination address is required
+                </mat-error>
+                <mat-error *ngIf="tripForm.get('destinationAddress')?.hasError('minlength')">
+                  Minimum 3 characters required
+                </mat-error>
+              </mat-form-field>
+            </div>
+
+            <div class="form-row">
+              <mat-form-field appearance="outline" class="half-width">
+                <mat-label>Pickup Point</mat-label>
+                <mat-icon matPrefix>place</mat-icon>
+                <input matInput formControlName="pickupPoint" placeholder="e.g., Platform 5, Gate 2">
+                <mat-error *ngIf="tripForm.get('pickupPoint')?.hasError('required')">
+                  Pickup point is required
+                </mat-error>
+              </mat-form-field>
+
+              <mat-form-field appearance="outline" class="half-width">
+                <mat-icon matPrefix>place</mat-icon>
+                <mat-label>Drop Point</mat-label>
+                <input matInput formControlName="dropPoint" placeholder="e.g., Main Entrance, Bay 3">
+                <mat-error *ngIf="tripForm.get('dropPoint')?.hasError('required')">
+                  Drop point is required
+                </mat-error>
+              </mat-form-field>
+            </div>
+          </div>
+
+          <!-- Timing Details -->
+          <div class="form-section">
+            <h3>
+              <mat-icon>schedule</mat-icon>
+              Timing Details
+            </h3>
+            <div class="form-row">
+              <mat-form-field appearance="outline" class="half-width">
+                <mat-label>Departure Time</mat-label>
+                <mat-icon matPrefix>access_time</mat-icon>
+                <input matInput type="time" formControlName="departureTime">
+                <mat-error *ngIf="tripForm.get('departureTime')?.hasError('required')">
+                  Departure time is required
+                </mat-error>
+              </mat-form-field>
+
+              <mat-form-field appearance="outline" class="half-width">
+                <mat-label>Arrival Time</mat-label>
+                <mat-icon matPrefix>access_time</mat-icon>
+                <input matInput type="time" formControlName="arrivalTime">
+                <mat-error *ngIf="tripForm.get('arrivalTime')?.hasError('required')">
+                  Arrival time is required
+                </mat-error>
+              </mat-form-field>
+            </div>
+          </div>
+
+          <!-- Pricing -->
+          <div class="form-section">
+            <h3>
+              <mat-icon>attach_money</mat-icon>
+              Pricing
+            </h3>
+            <mat-form-field appearance="outline" class="full-width">
+              <mat-label>Base Price per Seat (₹)</mat-label>
+              <mat-icon matPrefix>currency_rupee</mat-icon>
+              <input matInput type="number" formControlName="basePrice" placeholder="500">
+              <mat-error *ngIf="tripForm.get('basePrice')?.hasError('required')">
+                Base price is required
+              </mat-error>
+              <mat-error *ngIf="tripForm.get('basePrice')?.hasError('min')">
+                Price must be greater than 0
+              </mat-error>
+            </mat-form-field>
+          </div>
+
+          <!-- Summary -->
+          <div class="trip-summary" *ngIf="tripForm.valid">
+            <h3>Trip Summary</h3>
+            <div class="summary-grid">
+              <div class="summary-item">
+                <mat-icon>event</mat-icon>
+                <div>
+                  <span class="label">Date</span>
+                  <span class="value">{{tripForm.get('tripDate')?.value | date: 'MMM dd, yyyy'}}</span>
+                </div>
+              </div>
+              <div class="summary-item">
+                <mat-icon>schedule</mat-icon>
+                <div>
+                  <span class="label">Departure</span>
+                  <span class="value">{{tripForm.get('departureTime')?.value}}</span>
+                </div>
+              </div>
+              <div class="summary-item">
+                <mat-icon>schedule</mat-icon>
+                <div>
+                  <span class="label">Arrival</span>
+                  <span class="value">{{tripForm.get('arrivalTime')?.value}}</span>
+                </div>
+              </div>
+              <div class="summary-item">
+                <mat-icon>currency_rupee</mat-icon>
+                <div>
+                  <span class="label">Price</span>
+                  <span class="value">₹{{tripForm.get('basePrice')?.value}}</span>
+                </div>
+              </div>
+            </div>
+            <div class="route-summary">
+              <div class="route-point">
+                <mat-icon>trip_origin</mat-icon>
+                <div>
+                  <strong>{{tripForm.get('sourceAddress')?.value}}</strong>
+                  <span>Pickup: {{tripForm.get('pickupPoint')?.value}}</span>
+                </div>
+              </div>
+              <mat-icon class="arrow">arrow_forward</mat-icon>
+              <div class="route-point">
+                <mat-icon>location_on</mat-icon>
+                <div>
+                  <strong>{{tripForm.get('destinationAddress')?.value}}</strong>
+                  <span>Drop: {{tripForm.get('dropPoint')?.value}}</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </form>
+      </div>
+
+      <div class="dialog-actions">
+        <button mat-button (click)="closeScheduleDialog()">Cancel</button>
+        <button mat-raised-button color="primary" (click)="scheduleTrip()" [disabled]="tripForm.invalid">
+          <mat-icon>check</mat-icon>
+          Schedule Trip
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Trips Viewer Dialog -->
+  <div class="trips-dialog-overlay" *ngIf="showTripsDialog" (click)="closeTripsDialog()">
+    <div class="trips-dialog" (click)="$event.stopPropagation()">
+      <div class="dialog-header">
+        <h2>
+          <mat-icon>calendar_view_month</mat-icon>
+          Trip Schedules - {{selectedBus?.busName}}
+        </h2>
+        <button mat-icon-button (click)="closeTripsDialog()">
+          <mat-icon>close</mat-icon>
+        </button>
+      </div>
+
+      <div class="dialog-content">
+        <div class="trips-layout">
+          <!-- Calendar Section -->
+          <div class="calendar-section">
+            <h3>
+              <mat-icon>calendar_today</mat-icon>
+              Select Date
+            </h3>
+            <mat-calendar 
+              [(selected)]="selectedDate" 
+              (selectedChange)="onDateChange($event)"
+              [dateClass]="dateClass">
+            </mat-calendar>
+            
+            <div class="calendar-legend">
+              <div class="legend-item">
+                <div class="legend-dot has-trips"></div>
+                <span>Has Trips</span>
+              </div>
+              <div class="legend-item">
+                <div class="legend-dot selected"></div>
+                <span>Selected</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Trips List Section -->
+          <div class="trips-section">
+            <div class="trips-header">
+              <h3>
+                <mat-icon>event</mat-icon>
+                Trips on {{selectedDate | date: 'MMM dd, yyyy'}}
+              </h3>
+              <span class="trip-count" *ngIf="getTripsForDate(selectedDate).length > 0">
+                {{getTripsForDate(selectedDate).length}} trip(s)
+              </span>
+            </div>
+
+            <div *ngIf="isLoadingTrips" class="loading-state">
+              <div class="spinner"></div>
+              <p>Loading trips...</p>
+            </div>
+
+            <div *ngIf="!isLoadingTrips && getTripsForDate(selectedDate).length === 0" class="empty-trips">
+              <mat-icon>event_busy</mat-icon>
+              <h4>No trips scheduled</h4>
+              <p>No trips are scheduled for this date.</p>
+            </div>
+
+            <div *ngIf="!isLoadingTrips && getTripsForDate(selectedDate).length > 0" class="trips-list">
+              <div 
+                *ngFor="let trip of getTripsForDate(selectedDate)" 
+                class="trip-card"
+                [class.selected]="selectedTrip?.id === trip.id"
+                (click)="selectTrip(trip)">
+                
+                <div class="trip-header">
+                  <div class="trip-time">
+                    <mat-icon>schedule</mat-icon>
+                    <span class="time">{{trip.departureTime}}</span>
+                    <mat-icon class="arrow">arrow_forward</mat-icon>
+                    <span class="time">{{trip.arrivalTime}}</span>
+                  </div>
+                  <span class="trip-status" [class]="trip.status.toLowerCase()">
+                    {{trip.status}}
+                  </span>
+                </div>
+
+                <div class="trip-route">
+                  <div class="route-point">
+                    <mat-icon>trip_origin</mat-icon>
+                    <div>
+                      <strong>{{trip.sourceAddress}}</strong>
+                      <span class="pickup-point">Pickup: {{trip.pickupPoint}}</span>
+                    </div>
+                  </div>
+                  <mat-icon class="route-arrow">arrow_downward</mat-icon>
+                  <div class="route-point">
+                    <mat-icon>location_on</mat-icon>
+                    <div>
+                      <strong>{{trip.destinationAddress}}</strong>
+                      <span class="drop-point">Drop: {{trip.dropPoint}}</span>
+                    </div>
+                  </div>
+                </div>
+
+                <div class="trip-details">
+                  <div class="detail-item">
+                    <mat-icon>currency_rupee</mat-icon>
+                    <span>₹{{trip.basePrice}}/seat</span>
+                  </div>
+                  <div class="detail-item">
+                    <mat-icon>event_seat</mat-icon>
+                    <span>{{trip.bookedSeats}} booked</span>
+                  </div>
+                  <div class="detail-item">
+                    <mat-icon>event_available</mat-icon>
+                    <span>{{trip.availableSeats}} available</span>
+                  </div>
+                </div>
+
+                <div class="occupancy-bar">
+                  <div class="occupancy-label">
+                    <span>Occupancy</span>
+                    <span class="percentage">{{getOccupancyPercentage(trip) | number:'1.0-0'}}%</span>
+                  </div>
+                  <div class="progress-bar">
+                    <div 
+                      class="progress-fill" 
+                      [style.width.%]="getOccupancyPercentage(trip)"
+                      [style.background-color]="getOccupancyColor(getOccupancyPercentage(trip))">
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="dialog-actions">
+        <button mat-button (click)="closeTripsDialog()">Close</button>
+        <button mat-raised-button color="primary" (click)="openScheduleDialog(selectedBus); closeTripsDialog()">
+          <mat-icon>add</mat-icon>
+          Schedule New Trip
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+
+<!-- Bookings Dialog -->
+<div class="dialog-overlay" *ngIf="showBookingsDialog" (click)="closeBookingsDialog()">
+  <div class="dialog-container bookings-dialog" (click)="$event.stopPropagation()">
+    <div class="dialog-content">
+      <div class="dialog-header">
+        <div class="header-content">
+          <mat-icon class="header-icon">receipt_long</mat-icon>
+          <div>
+            <h2>Bookings - {{selectedBus?.busName}}</h2>
+            <p class="subtitle">View bookings for scheduled trips</p>
+          </div>
+        </div>
+        <button mat-icon-button (click)="closeBookingsDialog()" class="close-btn">
+          <mat-icon>close</mat-icon>
+        </button>
+      </div>
+
+      <div class="bookings-content">
+        <!-- Loading State -->
+        <div class="loading-state" *ngIf="isLoadingBookings">
+          <mat-icon class="spin">refresh</mat-icon>
+          <p>Loading bookings...</p>
+        </div>
+
+        <!-- Main Content -->
+        <div class="bookings-main" *ngIf="!isLoadingBookings">
+          <!-- Calendar Section -->
+          <div class="calendar-section">
+            <div class="calendar-header">
+              <mat-icon>calendar_today</mat-icon>
+              <h3>Select Date</h3>
+            </div>
+            
+            <mat-calendar 
+              [(selected)]="selectedBookingDate"
+              (selectedChange)="onBookingDateChange($event)"
+              [dateClass]="bookingDateClass"
+              [minDate]="minDate">
+            </mat-calendar>
+
+            <div class="calendar-legend">
+              <div class="legend-item">
+                <div class="legend-color has-bookings"></div>
+                <span>Has Bookings</span>
+              </div>
+              <div class="legend-item">
+                <div class="legend-color selected"></div>
+                <span>Selected</span>
+              </div>
+              <div class="legend-item">
+                <div class="legend-color past"></div>
+                <span>Past Date</span>
+              </div>
+            </div>
+
+            <!-- Date Summary -->
+            <div class="date-summary" *ngIf="selectedBookingDate">
+              <h4>{{selectedBookingDate | date:'fullDate'}}</h4>
+              <div class="summary-stats">
+                <div class="stat">
+                  <mat-icon>confirmation_number</mat-icon>
+                  <div>
+                    <span class="value">{{bookingsForSelectedDate.length}}</span>
+                    <span class="label">Bookings</span>
+                  </div>
+                </div>
+                <div class="stat">
+                  <mat-icon>event_seat</mat-icon>
+                  <div>
+                    <span class="value">{{getTotalSeatsBookedForDate(selectedBookingDate)}}</span>
+                    <span class="label">Seats</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Bookings List Section -->
+          <div class="bookings-list-section">
+            <div class="list-header">
+              <h3>Bookings for {{selectedBookingDate | date:'mediumDate'}}</h3>
+              <span class="booking-count">{{bookingsForSelectedDate.length}} booking(s)</span>
+            </div>
+
+            <!-- No Bookings State -->
+            <div class="no-bookings" *ngIf="bookingsForSelectedDate.length === 0">
+              <mat-icon>event_busy</mat-icon>
+              <h4>No Bookings</h4>
+              <p>No bookings found for this date</p>
+            </div>
+
+            <!-- Bookings Cards -->
+            <div class="bookings-list" *ngIf="bookingsForSelectedDate.length > 0">
+              <div class="booking-card" *ngFor="let booking of bookingsForSelectedDate">
+                <div class="booking-header">
+                  <div class="booking-ref">
+                    <mat-icon>confirmation_number</mat-icon>
+                    <span>{{booking.id.substring(0, 8).toUpperCase()}}</span>
+                  </div>
+                  <span class="booking-status" [class]="booking.status.toLowerCase()">
+                    {{booking.status}}
+                  </span>
+                </div>
+
+                <div class="booking-details">
+                  <div class="detail-row">
+                    <mat-icon>person</mat-icon>
+                    <div>
+                      <strong>{{booking.passengerName}}</strong>
+                      <span class="detail-label">Passenger</span>
+                    </div>
+                  </div>
+
+                  <div class="detail-row">
+                    <mat-icon>email</mat-icon>
+                    <div>
+                      <span>{{booking.passengerEmail}}</span>
+                      <span class="detail-label">Email</span>
+                    </div>
+                  </div>
+
+                  <div class="detail-row">
+                    <mat-icon>phone</mat-icon>
+                    <div>
+                      <span>{{booking.passengerPhone}}</span>
+                      <span class="detail-label">Phone</span>
+                    </div>
+                  </div>
+
+                  <div class="detail-row">
+                    <mat-icon>event_seat</mat-icon>
+                    <div>
+                      <div class="seat-chips">
+                        <span class="seat-chip" *ngFor="let seat of booking.seatNumbers">
+                          {{seat}}
+                        </span>
+                      </div>
+                      <span class="detail-label">Seat(s)</span>
+                    </div>
+                  </div>
+
+                  <div class="detail-row">
+                    <mat-icon>route</mat-icon>
+                    <div>
+                      <span>{{booking.source}} → {{booking.destination}}</span>
+                      <span class="detail-label">Route</span>
+                    </div>
+                  </div>
+
+                  <div class="detail-row">
+                    <mat-icon>event</mat-icon>
+                    <div>
+                      <span>{{booking.bookingDate | date:'medium'}}</span>
+                      <span class="detail-label">Booked On</span>
+                    </div>
+                  </div>
+
+                  <div class="detail-row amount">
+                    <mat-icon>currency_rupee</mat-icon>
+                    <div>
+                      <strong class="amount-value">₹{{booking.totalAmount}}</strong>
+                      <span class="detail-label">Total Amount</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="dialog-actions">
+        <button mat-button (click)="closeBookingsDialog()">Close</button>
+      </div>
+    </div>
+  </div>
+</div>

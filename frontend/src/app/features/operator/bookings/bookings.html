@@ -1,0 +1,336 @@
+<div class="bookings-container">
+  <!-- Header -->
+  <div class="page-header">
+    <div class="header-content">
+      <div class="header-text">
+        <h1>
+          <mat-icon>assignment</mat-icon>
+          Booking Management
+        </h1>
+        <p>Monitor and manage all bookings for your buses</p>
+      </div>
+      <div class="header-stats" *ngIf="bookings.length > 0">
+        <div class="stat-card">
+          <mat-icon>confirmation_number</mat-icon>
+          <div class="stat-content">
+            <span class="stat-value">{{bookings.length}}</span>
+            <span class="stat-label">Total Bookings</span>
+          </div>
+        </div>
+        <div class="stat-card">
+          <mat-icon>check_circle</mat-icon>
+          <div class="stat-content">
+            <span class="stat-value">{{getConfirmedCount()}}</span>
+            <span class="stat-label">Confirmed</span>
+          </div>
+        </div>
+        <div class="stat-card">
+          <mat-icon>event_seat</mat-icon>
+          <div class="stat-content">
+            <span class="stat-value">{{getTotalSeats()}}</span>
+            <span class="stat-label">Total Seats</span>
+          </div>
+        </div>
+        <div class="stat-card">
+          <mat-icon>attach_money</mat-icon>
+          <div class="stat-content">
+            <span class="stat-value">₹{{getTotalRevenue()}}</span>
+            <span class="stat-label">Total Revenue</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Loading State -->
+  <div class="loading-container" *ngIf="isLoading">
+    <mat-spinner diameter="50"></mat-spinner>
+    <p>Loading bookings...</p>
+  </div>
+
+  <!-- Content -->
+  <div class="content-wrapper" *ngIf="!isLoading">
+    <!-- No Bookings State -->
+    <mat-card class="empty-state-card" *ngIf="bookings.length === 0">
+      <mat-card-content>
+        <mat-icon>assignment</mat-icon>
+        <h3>No Bookings Yet</h3>
+        <p>Bookings will appear here once customers book your buses.</p>
+        <p class="hint">Make sure your buses are approved and active to receive bookings.</p>
+      </mat-card-content>
+    </mat-card>
+
+    <!-- Bookings Table -->
+    <mat-card class="bookings-table-card" *ngIf="bookings.length > 0">
+      <mat-card-content>
+        <!-- Filter Tabs -->
+        <mat-tab-group [(selectedIndex)]="selectedTab" (selectedTabChange)="onTabChange($event.index)">
+          <mat-tab label="All Bookings">
+            <div class="tab-content">
+              <div class="table-container">
+                <table mat-table [dataSource]="filteredBookings" class="bookings-table">
+                  <!-- Booking ID Column -->
+                  <ng-container matColumnDef="bookingId">
+                    <th mat-header-cell *matHeaderCellDef>Booking ID</th>
+                    <td mat-cell *matCellDef="let booking">
+                      <div class="booking-id">
+                        <mat-icon>confirmation_number</mat-icon>
+                        <span>{{formatBookingId(booking.id)}}</span>
+                      </div>
+                    </td>
+                  </ng-container>
+
+                  <!-- Bus Name Column -->
+                  <ng-container matColumnDef="busName">
+                    <th mat-header-cell *matHeaderCellDef>Bus</th>
+                    <td mat-cell *matCellDef="let booking">
+                      <div class="bus-info">
+                        <strong>{{booking.busName}}</strong>
+                        <span class="bus-number">{{booking.busNumber}}</span>
+                      </div>
+                    </td>
+                  </ng-container>
+
+                  <!-- Passenger Name Column -->
+                  <ng-container matColumnDef="passengerName">
+                    <th mat-header-cell *matHeaderCellDef>Passenger</th>
+                    <td mat-cell *matCellDef="let booking">{{booking.passengerName}}</td>
+                  </ng-container>
+
+                  <!-- Email Column -->
+                  <ng-container matColumnDef="passengerEmail">
+                    <th mat-header-cell *matHeaderCellDef>Email</th>
+                    <td mat-cell *matCellDef="let booking">{{booking.passengerEmail}}</td>
+                  </ng-container>
+
+                  <!-- Phone Column -->
+                  <ng-container matColumnDef="passengerPhone">
+                    <th mat-header-cell *matHeaderCellDef>Phone</th>
+                    <td mat-cell *matCellDef="let booking">{{booking.passengerPhone}}</td>
+                  </ng-container>
+
+                  <!-- Journey Date Column -->
+                  <ng-container matColumnDef="journeyDate">
+                    <th mat-header-cell *matHeaderCellDef>Journey Date</th>
+                    <td mat-cell *matCellDef="let booking">{{booking.journeyDate | date: 'MMM dd, yyyy'}}</td>
+                  </ng-container>
+
+                  <!-- Route Column -->
+                  <ng-container matColumnDef="route">
+                    <th mat-header-cell *matHeaderCellDef>Route</th>
+                    <td mat-cell *matCellDef="let booking">
+                      <div class="route-cell">
+                        <span>{{booking.source}}</span>
+                        <mat-icon>arrow_forward</mat-icon>
+                        <span>{{booking.destination}}</span>
+                      </div>
+                    </td>
+                  </ng-container>
+
+                  <!-- Seats Column -->
+                  <ng-container matColumnDef="seats">
+                    <th mat-header-cell *matHeaderCellDef>Seats</th>
+                    <td mat-cell *matCellDef="let booking">
+                      <span class="seats-badge">{{booking.seatNumbers.join(', ')}}</span>
+                    </td>
+                  </ng-container>
+
+                  <!-- Amount Column -->
+                  <ng-container matColumnDef="amount">
+                    <th mat-header-cell *matHeaderCellDef>Amount</th>
+                    <td mat-cell *matCellDef="let booking">
+                      <span class="amount">₹{{booking.totalAmount}}</span>
+                    </td>
+                  </ng-container>
+
+                  <!-- Status Column -->
+                  <ng-container matColumnDef="status">
+                    <th mat-header-cell *matHeaderCellDef>Status</th>
+                    <td mat-cell *matCellDef="let booking">
+                      <mat-chip [class]="'status-' + booking.status.toLowerCase()">
+                        {{booking.status}}
+                      </mat-chip>
+                    </td>
+                  </ng-container>
+
+                  <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
+                  <tr mat-row *matRowDef="let row; columns: displayedColumns;" class="booking-row"></tr>
+                </table>
+              </div>
+            </div>
+          </mat-tab>
+
+          <mat-tab label="Confirmed">
+            <div class="tab-content">
+              <div class="table-container">
+                <table mat-table [dataSource]="filteredBookings" class="bookings-table">
+                  <ng-container matColumnDef="bookingId">
+                    <th mat-header-cell *matHeaderCellDef>Booking ID</th>
+                    <td mat-cell *matCellDef="let booking">
+                      <div class="booking-id">
+                        <mat-icon>confirmation_number</mat-icon>
+                        <span>{{formatBookingId(booking.id)}}</span>
+                      </div>
+                    </td>
+                  </ng-container>
+
+                  <ng-container matColumnDef="busName">
+                    <th mat-header-cell *matHeaderCellDef>Bus</th>
+                    <td mat-cell *matCellDef="let booking">
+                      <div class="bus-info">
+                        <strong>{{booking.busName}}</strong>
+                        <span class="bus-number">{{booking.busNumber}}</span>
+                      </div>
+                    </td>
+                  </ng-container>
+
+                  <ng-container matColumnDef="passengerName">
+                    <th mat-header-cell *matHeaderCellDef>Passenger</th>
+                    <td mat-cell *matCellDef="let booking">{{booking.passengerName}}</td>
+                  </ng-container>
+
+                  <ng-container matColumnDef="passengerEmail">
+                    <th mat-header-cell *matHeaderCellDef>Email</th>
+                    <td mat-cell *matCellDef="let booking">{{booking.passengerEmail}}</td>
+                  </ng-container>
+
+                  <ng-container matColumnDef="passengerPhone">
+                    <th mat-header-cell *matHeaderCellDef>Phone</th>
+                    <td mat-cell *matCellDef="let booking">{{booking.passengerPhone}}</td>
+                  </ng-container>
+
+                  <ng-container matColumnDef="journeyDate">
+                    <th mat-header-cell *matHeaderCellDef>Journey Date</th>
+                    <td mat-cell *matCellDef="let booking">{{booking.journeyDate | date: 'MMM dd, yyyy'}}</td>
+                  </ng-container>
+
+                  <ng-container matColumnDef="route">
+                    <th mat-header-cell *matHeaderCellDef>Route</th>
+                    <td mat-cell *matCellDef="let booking">
+                      <div class="route-cell">
+                        <span>{{booking.source}}</span>
+                        <mat-icon>arrow_forward</mat-icon>
+                        <span>{{booking.destination}}</span>
+                      </div>
+                    </td>
+                  </ng-container>
+
+                  <ng-container matColumnDef="seats">
+                    <th mat-header-cell *matHeaderCellDef>Seats</th>
+                    <td mat-cell *matCellDef="let booking">
+                      <span class="seats-badge">{{booking.seatNumbers.join(', ')}}</span>
+                    </td>
+                  </ng-container>
+
+                  <ng-container matColumnDef="amount">
+                    <th mat-header-cell *matHeaderCellDef>Amount</th>
+                    <td mat-cell *matCellDef="let booking">
+                      <span class="amount">₹{{booking.totalAmount}}</span>
+                    </td>
+                  </ng-container>
+
+                  <ng-container matColumnDef="status">
+                    <th mat-header-cell *matHeaderCellDef>Status</th>
+                    <td mat-cell *matCellDef="let booking">
+                      <mat-chip [class]="'status-' + booking.status.toLowerCase()">
+                        {{booking.status}}
+                      </mat-chip>
+                    </td>
+                  </ng-container>
+
+                  <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
+                  <tr mat-row *matRowDef="let row; columns: displayedColumns;" class="booking-row"></tr>
+                </table>
+              </div>
+            </div>
+          </mat-tab>
+
+          <mat-tab label="Cancelled">
+            <div class="tab-content">
+              <div class="table-container">
+                <table mat-table [dataSource]="filteredBookings" class="bookings-table">
+                  <ng-container matColumnDef="bookingId">
+                    <th mat-header-cell *matHeaderCellDef>Booking ID</th>
+                    <td mat-cell *matCellDef="let booking">
+                      <div class="booking-id">
+                        <mat-icon>confirmation_number</mat-icon>
+                        <span>{{formatBookingId(booking.id)}}</span>
+                      </div>
+                    </td>
+                  </ng-container>
+
+                  <ng-container matColumnDef="busName">
+                    <th mat-header-cell *matHeaderCellDef>Bus</th>
+                    <td mat-cell *matCellDef="let booking">
+                      <div class="bus-info">
+                        <strong>{{booking.busName}}</strong>
+                        <span class="bus-number">{{booking.busNumber}}</span>
+                      </div>
+                    </td>
+                  </ng-container>
+
+                  <ng-container matColumnDef="passengerName">
+                    <th mat-header-cell *matHeaderCellDef>Passenger</th>
+                    <td mat-cell *matCellDef="let booking">{{booking.passengerName}}</td>
+                  </ng-container>
+
+                  <ng-container matColumnDef="passengerEmail">
+                    <th mat-header-cell *matHeaderCellDef>Email</th>
+                    <td mat-cell *matCellDef="let booking">{{booking.passengerEmail}}</td>
+                  </ng-container>
+
+                  <ng-container matColumnDef="passengerPhone">
+                    <th mat-header-cell *matHeaderCellDef>Phone</th>
+                    <td mat-cell *matCellDef="let booking">{{booking.passengerPhone}}</td>
+                  </ng-container>
+
+                  <ng-container matColumnDef="journeyDate">
+                    <th mat-header-cell *matHeaderCellDef>Journey Date</th>
+                    <td mat-cell *matCellDef="let booking">{{booking.journeyDate | date: 'MMM dd, yyyy'}}</td>
+                  </ng-container>
+
+                  <ng-container matColumnDef="route">
+                    <th mat-header-cell *matHeaderCellDef>Route</th>
+                    <td mat-cell *matCellDef="let booking">
+                      <div class="route-cell">
+                        <span>{{booking.source}}</span>
+                        <mat-icon>arrow_forward</mat-icon>
+                        <span>{{booking.destination}}</span>
+                      </div>
+                    </td>
+                  </ng-container>
+
+                  <ng-container matColumnDef="seats">
+                    <th mat-header-cell *matHeaderCellDef>Seats</th>
+                    <td mat-cell *matCellDef="let booking">
+                      <span class="seats-badge">{{booking.seatNumbers.join(', ')}}</span>
+                    </td>
+                  </ng-container>
+
+                  <ng-container matColumnDef="amount">
+                    <th mat-header-cell *matHeaderCellDef>Amount</th>
+                    <td mat-cell *matCellDef="let booking">
+                      <span class="amount">₹{{booking.totalAmount}}</span>
+                    </td>
+                  </ng-container>
+
+                  <ng-container matColumnDef="status">
+                    <th mat-header-cell *matHeaderCellDef>Status</th>
+                    <td mat-cell *matCellDef="let booking">
+                      <mat-chip [class]="'status-' + booking.status.toLowerCase()">
+                        {{booking.status}}
+                      </mat-chip>
+                    </td>
+                  </ng-container>
+
+                  <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
+                  <tr mat-row *matRowDef="let row; columns: displayedColumns;" class="booking-row"></tr>
+                </table>
+              </div>
+            </div>
+          </mat-tab>
+        </mat-tab-group>
+      </mat-card-content>
+    </mat-card>
+  </div>
+</div>

@@ -1,0 +1,340 @@
+<div class="user-panel">
+  <!-- Navbar -->
+  <mat-toolbar color="primary" class="navbar">
+    <div class="navbar-content">
+      <!-- Logo/Brand -->
+      <div class="brand" routerLink="/user">
+        <mat-icon class="brand-icon">directions_bus</mat-icon>
+        <span class="brand-name">Bus Booking</span>
+      </div>
+
+      <span class="spacer"></span>
+
+      <!-- Navigation Items -->
+      <div class="nav-items">
+        <!-- When NOT logged in -->
+        <ng-container *ngIf="!isLoggedIn">
+          <button mat-button class="nav-button" (click)="navigateToLogin()">
+            <mat-icon>login</mat-icon>
+            <span>Login</span>
+          </button>
+          <button mat-raised-button color="accent" class="nav-button register-btn" (click)="navigateToRegister()">
+            <mat-icon>person_add</mat-icon>
+            <span>Register</span>
+          </button>
+        </ng-container>
+
+        <!-- When logged in -->
+        <ng-container *ngIf="isLoggedIn">
+          <button mat-button class="nav-button" (click)="navigateToMyBookings()">
+            <mat-icon>book_online</mat-icon>
+            <span>My Bookings</span>
+          </button>
+
+          <!-- Profile Menu -->
+          <button mat-icon-button [matMenuTriggerFor]="profileMenu" class="profile-button">
+            <div class="profile-avatar">
+              <span class="avatar-text">{{getUserInitials()}}</span>
+            </div>
+          </button>
+
+          <mat-menu #profileMenu="matMenu" class="profile-menu">
+            <div class="profile-header" mat-menu-item disabled>
+              <div class="profile-avatar-large">
+                <span class="avatar-text-large">{{getUserInitials()}}</span>
+              </div>
+              <div class="profile-info">
+                <div class="profile-name">{{userName}}</div>
+                <div class="profile-email">{{userEmail}}</div>
+              </div>
+            </div>
+            <mat-divider></mat-divider>
+            <button mat-menu-item (click)="navigateToProfile()">
+              <mat-icon>account_circle</mat-icon>
+              <span>My Profile</span>
+            </button>
+            <button mat-menu-item (click)="navigateToMyBookings()">
+              <mat-icon>book_online</mat-icon>
+              <span>My Bookings</span>
+            </button>
+            <mat-divider></mat-divider>
+            <button mat-menu-item (click)="logout()">
+              <mat-icon>logout</mat-icon>
+              <span>Logout</span>
+            </button>
+          </mat-menu>
+        </ng-container>
+      </div>
+    </div>
+  </mat-toolbar>
+
+  <!-- Search Section -->
+  <section class="search-section">
+    <div class="search-container">
+      <h2>Search Buses</h2>
+      <p class="search-subtitle">Find and book your bus tickets</p>
+      
+      <form [formGroup]="searchForm" (ngSubmit)="onSearch()" class="search-form">
+        <div class="form-fields">
+          <mat-form-field appearance="outline" class="search-field">
+            <mat-label>Source</mat-label>
+            <mat-icon matPrefix>location_on</mat-icon>
+            <input matInput formControlName="source" placeholder="Enter source city">
+          </mat-form-field>
+
+          <div class="swap-icon">
+            <mat-icon>swap_horiz</mat-icon>
+          </div>
+
+          <mat-form-field appearance="outline" class="search-field">
+            <mat-label>Destination</mat-label>
+            <mat-icon matPrefix>navigation</mat-icon>
+            <input matInput formControlName="destination" placeholder="Enter destination city">
+          </mat-form-field>
+
+          <mat-form-field appearance="outline" class="search-field date-field">
+            <mat-label>Travel Date</mat-label>
+            <mat-icon matPrefix>calendar_today</mat-icon>
+            <input matInput [matDatepicker]="picker" formControlName="tripDate" [min]="minDate" placeholder="Select date">
+            <mat-datepicker-toggle matSuffix [for]="picker"></mat-datepicker-toggle>
+            <mat-datepicker #picker></mat-datepicker>
+          </mat-form-field>
+        </div>
+
+        <div class="action-buttons">
+          <button mat-raised-button color="primary" type="submit" [disabled]="isSearching" class="search-btn">
+            <mat-icon *ngIf="!isSearching">search</mat-icon>
+            <mat-spinner *ngIf="isSearching" diameter="20"></mat-spinner>
+            <span *ngIf="!isSearching">SEARCH TRIPS</span>
+            <span *ngIf="isSearching">SEARCHING...</span>
+          </button>
+          <button mat-stroked-button type="button" (click)="onClearFilters()" class="clear-btn">
+            <mat-icon>clear</mat-icon>
+            CLEAR FILTERS
+          </button>
+        </div>
+      </form>
+    </div>
+  </section>
+
+  <!-- Bus List Section -->
+  <section class="bus-list-section">
+    <div class="container">
+      <!-- Loading State -->
+      <div class="loading-state" *ngIf="isSearching">
+        <mat-spinner diameter="50"></mat-spinner>
+        <p>Loading available buses...</p>
+      </div>
+
+      <!-- Results Header -->
+      <div class="results-header" *ngIf="!isSearching">
+        <h2>Available Trips</h2>
+        <p class="results-count" *ngIf="availableTrips.length > 0">
+          <mat-icon>event</mat-icon>
+          {{availableTrips.length}} trip{{availableTrips.length !== 1 ? 's' : ''}} found
+        </p>
+      </div>
+
+      <!-- Trip Cards -->
+      <div class="bus-list" *ngIf="!isSearching && availableTrips.length > 0">
+        <mat-card *ngFor="let trip of availableTrips" class="bus-card trip-card">
+          <mat-card-content>
+            <div class="bus-card-layout">
+              <!-- Left Section: Bus & Trip Details -->
+              <div class="bus-details">
+                <div class="bus-header">
+                  <div class="operator-info">
+                    <mat-icon class="operator-icon">business</mat-icon>
+                    <span class="operator-name">{{trip.operatorName}}</span>
+                  </div>
+                  <mat-chip class="bus-type-chip">{{trip.busType}}</mat-chip>
+                </div>
+
+                <h3 class="bus-name">{{trip.busName}}</h3>
+                <p class="bus-number">{{trip.busNumber}}</p>
+
+                <!-- Trip Date Badge -->
+                <div class="trip-date-badge">
+                  <mat-icon>event</mat-icon>
+                  <span>{{trip.tripDate | date: 'EEE, MMM dd, yyyy'}}</span>
+                </div>
+
+                <!-- Route Information with Timing -->
+                <div class="route-info">
+                  <div class="route-point">
+                    <mat-icon>trip_origin</mat-icon>
+                    <div class="point-details">
+                      <span class="label">From</span>
+                      <span class="city">{{trip.sourceAddress}}</span>
+                      <span class="time">{{trip.departureTime}}</span>
+                    </div>
+                  </div>
+
+                  <div class="route-line">
+                    <div class="line"></div>
+                    <div class="duration-badge">
+                      <mat-icon>access_time</mat-icon>
+                      <span>{{formatDuration(trip.duration)}}</span>
+                    </div>
+                    <mat-icon class="route-icon">arrow_forward</mat-icon>
+                  </div>
+
+                  <div class="route-point">
+                    <mat-icon>location_on</mat-icon>
+                    <div class="point-details">
+                      <span class="label">To</span>
+                      <span class="city">{{trip.destinationAddress}}</span>
+                      <span class="time">{{trip.arrivalTime}}</span>
+                    </div>
+                  </div>
+                </div>
+
+                <!-- Pickup & Drop Points -->
+                <div class="pickup-drop-section">
+                  <div class="pickup-drop-item">
+                    <mat-icon>place</mat-icon>
+                    <div>
+                      <span class="label">Pickup Point</span>
+                      <span class="value">{{trip.pickupPoint}}</span>
+                    </div>
+                  </div>
+                  <div class="pickup-drop-item">
+                    <mat-icon>place</mat-icon>
+                    <div>
+                      <span class="label">Drop Point</span>
+                      <span class="value">{{trip.dropPoint}}</span>
+                    </div>
+                  </div>
+                </div>
+
+                <!-- Amenities -->
+                <div class="amenities-section" *ngIf="trip.amenities">
+                  <p class="section-label">
+                    <mat-icon>star</mat-icon>
+                    Amenities
+                  </p>
+                  <mat-chip-set class="amenities-chips">
+                    <mat-chip *ngFor="let amenity of getAmenitiesList(trip.amenities)">
+                      {{amenity}}
+                    </mat-chip>
+                  </mat-chip-set>
+                </div>
+              </div>
+
+              <!-- Middle Section: Seat Layout Info -->
+              <div class="seat-layout-info">
+                <p class="section-label">
+                  <mat-icon>event_seat</mat-icon>
+                  Seat Information
+                </p>
+                
+                <div class="seat-stats">
+                  <div class="stat-item total">
+                    <mat-icon>airline_seat_recline_normal</mat-icon>
+                    <div class="stat-details">
+                      <span class="stat-value">{{trip.totalSeats}}</span>
+                      <span class="stat-label">Total Seats</span>
+                    </div>
+                  </div>
+
+                  <div class="seat-availability">
+                    <div class="stat-item available">
+                      <mat-icon>check_circle</mat-icon>
+                      <div class="stat-details">
+                        <span class="stat-value">{{trip.availableSeats}}</span>
+                        <span class="stat-label">Available</span>
+                      </div>
+                    </div>
+
+                    <div class="stat-item booked">
+                      <mat-icon>event_busy</mat-icon>
+                      <div class="stat-details">
+                        <span class="stat-value">{{trip.bookedSeats}}</span>
+                        <span class="stat-label">Booked</span>
+                      </div>
+                    </div>
+
+                    <div class="gender-seats" *ngIf="trip.femaleSeats || trip.maleSeats">
+                      <div class="gender-item female">
+                        <mat-icon>female</mat-icon>
+                        <span>{{trip.femaleSeats || 0}}</span>
+                      </div>
+                      <div class="gender-item male">
+                        <mat-icon>male</mat-icon>
+                        <span>{{trip.maleSeats || 0}}</span>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                <div class="layout-preview">
+                  <mat-icon>grid_view</mat-icon>
+                  <span>{{getSeatLayoutPreview(trip.totalSeats)}}</span>
+                </div>
+              </div>
+
+              <!-- Right Section: Pricing & Booking -->
+              <div class="booking-section">
+                <div class="price-info">
+                  <p class="price-label">Starting from</p>
+                  <div class="price">
+                    <span class="currency">₹</span>
+                    <span class="amount">{{trip.basePrice}}</span>
+                  </div>
+                  <p class="price-note">per seat</p>
+                </div>
+
+                <button 
+                  mat-raised-button 
+                  color="warn" 
+                  (click)="bookNow(trip.tripId)" 
+                  class="book-btn"
+                  [disabled]="trip.availableSeats === 0">
+                  <mat-icon>event_seat</mat-icon>
+                  <span *ngIf="isLoggedIn">BOOK THIS TRIP</span>
+                  <span *ngIf="!isLoggedIn">LOGIN TO BOOK</span>
+                </button>
+
+                <p class="booking-note" *ngIf="!isLoggedIn">
+                  <mat-icon>info</mat-icon>
+                  Please login to book tickets
+                </p>
+
+                <p class="availability-note" *ngIf="trip.availableSeats === 0">
+                  <mat-icon>error</mat-icon>
+                  Fully Booked
+                </p>
+              </div>
+            </div>
+          </mat-card-content>
+        </mat-card>
+      </div>
+
+      <!-- No Results State -->
+      <div class="no-results" *ngIf="!isSearching && availableTrips.length === 0">
+        <mat-icon>search_off</mat-icon>
+        <h3>No trips found</h3>
+        <p>Try adjusting your search filters or check back later for available trips.</p>
+        <button mat-raised-button color="primary" (click)="onClearFilters()">
+          <mat-icon>refresh</mat-icon>
+          Show All Trips
+        </button>
+      </div>
+    </div>
+  </section>
+
+  <!-- Info Banner -->
+  <section class="info-banner" *ngIf="!isLoggedIn">
+    <div class="banner-content">
+      <mat-icon>info</mat-icon>
+      <div class="banner-text">
+        <h3>Want to book a bus?</h3>
+        <p>Please login or register to book your tickets</p>
+      </div>
+      <div class="banner-actions">
+        <button mat-raised-button color="primary" (click)="navigateToLogin()">Login</button>
+        <button mat-stroked-button (click)="navigateToRegister()">Register</button>
+      </div>
+    </div>
+  </section>
+</div>

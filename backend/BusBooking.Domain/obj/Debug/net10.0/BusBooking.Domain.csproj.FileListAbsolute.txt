@@ -1,0 +1,12 @@
+F:\Bus_Booking_System\backend\BusBooking.Domain\bin\Debug\net10.0\BusBooking.Domain.deps.json
+F:\Bus_Booking_System\backend\BusBooking.Domain\bin\Debug\net10.0\BusBooking.Domain.dll
+F:\Bus_Booking_System\backend\BusBooking.Domain\bin\Debug\net10.0\BusBooking.Domain.pdb
+F:\Bus_Booking_System\backend\BusBooking.Domain\obj\Debug\net10.0\BusBooking.Domain.GeneratedMSBuildEditorConfig.editorconfig
+F:\Bus_Booking_System\backend\BusBooking.Domain\obj\Debug\net10.0\BusBooking.Domain.AssemblyInfoInputs.cache
+F:\Bus_Booking_System\backend\BusBooking.Domain\obj\Debug\net10.0\BusBooking.Domain.AssemblyInfo.cs
+F:\Bus_Booking_System\backend\BusBooking.Domain\obj\Debug\net10.0\BusBooking.Domain.csproj.CoreCompileInputs.cache
+F:\Bus_Booking_System\backend\BusBooking.Domain\obj\Debug\net10.0\BusBooking.Domain.dll
+F:\Bus_Booking_System\backend\BusBooking.Domain\obj\Debug\net10.0\refint\BusBooking.Domain.dll
+F:\Bus_Booking_System\backend\BusBooking.Domain\obj\Debug\net10.0\BusBooking.Domain.pdb
+F:\Bus_Booking_System\backend\BusBooking.Domain\obj\Debug\net10.0\ref\BusBooking.Domain.dll
+F:\Bus_Booking_System\backend\BusBooking.Domain\obj\Debug\net10.0\BusBooking.Domain.sourcelink.json

@@ -1,0 +1,403 @@
+<div class="seat-selection-container">
+  <!-- Header -->
+  <mat-toolbar color="primary" class="booking-header">
+    <button mat-icon-button (click)="cancelBooking()">
+      <mat-icon>arrow_back</mat-icon>
+    </button>
+    <span class="header-title">Book Your Seats</span>
+  </mat-toolbar>
+
+  <!-- Loading State -->
+  <div class="loading-container" *ngIf="isLoading">
+    <mat-spinner diameter="50"></mat-spinner>
+    <p>Loading trip details...</p>
+  </div>
+
+  <!-- Main Content -->
+  <div class="content-wrapper" *ngIf="!isLoading && tripDetails">
+    <!-- Bus Details Card -->
+    <mat-card class="bus-info-card">
+      <mat-card-content>
+        <div class="bus-info-header">
+          <div class="bus-main-info">
+            <h2>{{tripDetails.busName}}</h2>
+            <p class="bus-number">{{tripDetails.busNumber}}</p>
+            <p class="operator">{{tripDetails.operatorName}}</p>
+          </div>
+          <mat-chip class="bus-type-chip">{{tripDetails.busType}}</mat-chip>
+        </div>
+
+        <div class="route-info">
+          <div class="route-point">
+            <mat-icon>trip_origin</mat-icon>
+            <div class="route-details">
+              <span class="route-label">{{tripDetails.sourceAddress}}</span>
+              <span class="route-sublabel">Pickup: {{tripDetails.pickupPoint}}</span>
+              <span class="route-time">{{tripDetails.departureTime}}</span>
+            </div>
+          </div>
+          <mat-icon class="route-arrow">arrow_forward</mat-icon>
+          <div class="route-point">
+            <mat-icon>location_on</mat-icon>
+            <div class="route-details">
+              <span class="route-label">{{tripDetails.destinationAddress}}</span>
+              <span class="route-sublabel">Drop: {{tripDetails.dropPoint}}</span>
+              <span class="route-time">{{tripDetails.arrivalTime}}</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="trip-date-info">
+          <mat-icon>event</mat-icon>
+          <span>{{tripDetails.tripDate | date:'fullDate'}}</span>
+          <mat-chip class="duration-chip">
+            <mat-icon>schedule</mat-icon>
+            {{tripDetails.duration}} mins
+          </mat-chip>
+        </div>
+
+        <div class="amenities" *ngIf="tripDetails.amenities">
+          <mat-chip-set>
+            <mat-chip *ngFor="let amenity of getAmenitiesList(tripDetails.amenities)">
+              {{amenity}}
+            </mat-chip>
+          </mat-chip-set>
+        </div>
+
+        <div class="price-info">
+          <span class="price-label">Price per seat:</span>
+          <span class="price-value">₹{{tripDetails.basePrice}}</span>
+        </div>
+      </mat-card-content>
+    </mat-card>
+
+    <!-- Step 1: Seat Selection -->
+    <div class="step-container" *ngIf="currentStep === 0">
+      <mat-card class="seat-selection-card">
+        <mat-card-header>
+          <mat-card-title>
+            <mat-icon>event_seat</mat-icon>
+            Select Your Seats
+          </mat-card-title>
+        </mat-card-header>
+
+        <mat-card-content>
+          <!-- Legend -->
+          <div class="seat-legend">
+            <div class="legend-item">
+              <div class="seat-icon female-reserved"></div>
+              <span>Female Reserved</span>
+            </div>
+            <div class="legend-item">
+              <div class="seat-icon male-reserved"></div>
+              <span>Male Reserved</span>
+            </div>
+            <div class="legend-item">
+              <div class="seat-icon general-seat"></div>
+              <span>General</span>
+            </div>
+            <div class="legend-item">
+              <div class="seat-icon selected"></div>
+              <span>Selected</span>
+            </div>
+            <div class="legend-item">
+              <div class="seat-icon booked"></div>
+              <span>Booked</span>
+            </div>
+          </div>
+
+          <!-- Seat Layout -->
+          <div class="seat-layout">
+            <div class="driver-section">
+              <mat-icon>drive_eta</mat-icon>
+              <span>Driver</span>
+            </div>
+
+            <div class="seats-grid">
+              <div class="seat-row" *ngFor="let row of seats; let rowIndex = index">
+                <span class="row-number">{{rowIndex + 1}}</span>
+                
+                <div class="seats-container">
+                  <button 
+                    *ngFor="let seat of row; let colIndex = index"
+                    class="seat-button"
+                    [class.available]="!seat.isBooked && !seat.isSelected"
+                    [class.selected]="seat.isSelected"
+                    [class.booked]="seat.isBooked"
+                    [class.female-reserved]="seat.reservedFor === 'female' && !seat.isBooked && !seat.isSelected"
+                    [class.male-reserved]="seat.reservedFor === 'male' && !seat.isBooked && !seat.isSelected"
+                    [class.general-seat]="seat.reservedFor === 'general' && !seat.isBooked && !seat.isSelected"
+                    [class.aisle-gap]="colIndex === 1"
+                    [disabled]="seat.isBooked"
+                    (click)="toggleSeat(seat)"
+                    [matTooltip]="seat.isBooked ? 'Booked' : (seat.reservedFor === 'female' ? 'Female Reserved - Seat ' + seat.seatNumber : seat.reservedFor === 'male' ? 'Male Reserved - Seat ' + seat.seatNumber : 'General - Seat ' + seat.seatNumber)">
+                    <mat-icon>event_seat</mat-icon>
+                    <span class="seat-number">{{seat.seatNumber}}</span>
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Selected Seats Summary -->
+          <div class="selection-summary" *ngIf="selectedSeats.length > 0">
+            <div class="summary-header">
+              <h3>Selected Seats</h3>
+              <button mat-button color="warn" (click)="selectedSeats.forEach(s => toggleSeat(s))">
+                Clear All
+              </button>
+            </div>
+            <div class="selected-seats-list">
+              <mat-chip-set>
+                <mat-chip *ngFor="let seat of selectedSeats" (removed)="toggleSeat(seat)">
+                  Seat {{seat.seatNumber}}
+                  <button matChipRemove>
+                    <mat-icon>cancel</mat-icon>
+                  </button>
+                </mat-chip>
+              </mat-chip-set>
+            </div>
+            <div class="total-price">
+              <span>Total Amount:</span>
+              <span class="price">₹{{getTotalPrice()}}</span>
+            </div>
+          </div>
+        </mat-card-content>
+
+        <mat-card-actions>
+          <button mat-button (click)="cancelBooking()">Cancel</button>
+          <button 
+            mat-raised-button 
+            color="primary" 
+            (click)="proceedToPassengerDetails()"
+            [disabled]="selectedSeats.length === 0">
+            Proceed to Passenger Details
+            <mat-icon>arrow_forward</mat-icon>
+          </button>
+        </mat-card-actions>
+      </mat-card>
+    </div>
+
+    <!-- Step 2: Passenger Details -->
+    <div class="step-container" *ngIf="currentStep === 1">
+      <mat-card class="passenger-details-card">
+        <mat-card-header>
+          <mat-card-title>
+            <mat-icon>person</mat-icon>
+            Passenger Details
+          </mat-card-title>
+        </mat-card-header>
+
+        <mat-card-content>
+          <!-- Selected Seats Info -->
+          <div class="booking-summary">
+            <h3>Booking Summary</h3>
+            <div class="summary-row">
+              <span>Selected Seats:</span>
+              <span class="value">{{selectedSeats.map(s => s.seatNumber).join(', ')}}</span>
+            </div>
+            <div class="summary-row">
+              <span>Number of Seats:</span>
+              <span class="value">{{selectedSeats.length}}</span>
+            </div>
+            <div class="summary-row total">
+              <span>Total Amount:</span>
+              <span class="value">₹{{getTotalPrice()}}</span>
+            </div>
+          </div>
+
+          <!-- Passenger Form -->
+          <div class="passengers-container">
+            <div *ngFor="let form of passengerForms; let i = index" class="passenger-form-card">
+              <h3>
+                <mat-icon>person</mat-icon>
+                Passenger {{i + 1}} - Seat {{selectedSeats[i].seatNumber}}
+                <mat-chip class="seat-type-chip" [class.female]="selectedSeats[i].reservedFor === 'female'" 
+                          [class.male]="selectedSeats[i].reservedFor === 'male'"
+                          [class.general]="selectedSeats[i].reservedFor === 'general'">
+                  {{selectedSeats[i].reservedFor === 'female' ? 'Female Reserved' : 
+                    selectedSeats[i].reservedFor === 'male' ? 'Male Reserved' : 'General'}}
+                </mat-chip>
+              </h3>
+
+              <form [formGroup]="form" class="passenger-form">
+                <mat-form-field appearance="outline" class="full-width">
+                  <mat-label>Full Name</mat-label>
+                  <mat-icon matPrefix>person</mat-icon>
+                  <input matInput formControlName="fullName" placeholder="Enter full name">
+                  <mat-error *ngIf="form.get('fullName')?.hasError('required')">
+                    Full name is required
+                  </mat-error>
+                  <mat-error *ngIf="form.get('fullName')?.hasError('minlength')">
+                    Name must be at least 3 characters
+                  </mat-error>
+                </mat-form-field>
+
+                <mat-form-field appearance="outline" class="full-width">
+                  <mat-label>Email</mat-label>
+                  <mat-icon matPrefix>email</mat-icon>
+                  <input matInput type="email" formControlName="email" placeholder="Enter email">
+                  <mat-error *ngIf="form.get('email')?.hasError('required')">
+                    Email is required
+                  </mat-error>
+                  <mat-error *ngIf="form.get('email')?.hasError('email')">
+                    Enter a valid email
+                  </mat-error>
+                </mat-form-field>
+
+                <mat-form-field appearance="outline" class="full-width">
+                  <mat-label>Phone Number</mat-label>
+                  <mat-icon matPrefix>phone</mat-icon>
+                  <input matInput formControlName="phone" placeholder="10-digit mobile number">
+                  <mat-error *ngIf="form.get('phone')?.hasError('required')">
+                    Phone number is required
+                  </mat-error>
+                  <mat-error *ngIf="form.get('phone')?.hasError('pattern')">
+                    Enter a valid 10-digit phone number
+                  </mat-error>
+                </mat-form-field>
+
+                <div class="form-row">
+                  <mat-form-field appearance="outline" class="half-width">
+                    <mat-label>Age</mat-label>
+                    <mat-icon matPrefix>cake</mat-icon>
+                    <input matInput type="number" formControlName="age" placeholder="Age">
+                    <mat-error *ngIf="form.get('age')?.hasError('required')">
+                      Age is required
+                    </mat-error>
+                    <mat-error *ngIf="form.get('age')?.hasError('min') || form.get('age')?.hasError('max')">
+                      Enter a valid age (1-120)
+                    </mat-error>
+                  </mat-form-field>
+
+                  <mat-form-field appearance="outline" class="half-width">
+                    <mat-label>Gender</mat-label>
+                    <mat-icon matPrefix>wc</mat-icon>
+                    <select matNativeControl formControlName="gender">
+                      <option value="">Select Gender</option>
+                      <option value="Male">Male</option>
+                      <option value="Female">Female</option>
+                      <option value="Other">Other</option>
+                    </select>
+                    <mat-error *ngIf="form.get('gender')?.hasError('required')">
+                      Gender is required
+                    </mat-error>
+                  </mat-form-field>
+                </div>
+              </form>
+            </div>
+          </div>
+        </mat-card-content>
+
+        <mat-card-actions>
+          <button mat-button (click)="backToSeatSelection()">
+            <mat-icon>arrow_back</mat-icon>
+            Back to Seat Selection
+          </button>
+          <button 
+            mat-raised-button 
+            color="primary" 
+            (click)="proceedToPayment()">
+            Proceed to Payment
+            <mat-icon>arrow_forward</mat-icon>
+          </button>
+        </mat-card-actions>
+      </mat-card>
+    </div>
+
+    <!-- Step 3: Payment Confirmation -->
+    <div class="step-container" *ngIf="currentStep === 2">
+      <mat-card class="payment-card">
+        <mat-card-header>
+          <mat-card-title>
+            <mat-icon>payment</mat-icon>
+            Payment Confirmation
+          </mat-card-title>
+        </mat-card-header>
+
+        <mat-card-content>
+          <!-- Booking Summary -->
+          <div class="booking-summary">
+            <h3>Booking Summary</h3>
+            <div class="summary-row">
+              <span>Selected Seats:</span>
+              <span class="value">{{selectedSeats.map(s => s.seatNumber).join(', ')}}</span>
+            </div>
+            <div class="summary-row">
+              <span>Number of Passengers:</span>
+              <span class="value">{{selectedSeats.length}}</span>
+            </div>
+            <div class="summary-row">
+              <span>Price per Seat:</span>
+              <span class="value">₹{{tripDetails?.basePrice}}</span>
+            </div>
+            <div class="summary-row total">
+              <span>Total Amount to Pay:</span>
+              <span class="value">₹{{getTotalPrice()}}</span>
+            </div>
+          </div>
+
+          <!-- Payment Form -->
+          <form [formGroup]="paymentForm" class="payment-form">
+            <h3>Payment Details</h3>
+            
+            <mat-form-field appearance="outline" class="full-width">
+              <mat-label>Payment Method</mat-label>
+              <mat-icon matPrefix>account_balance_wallet</mat-icon>
+              <select matNativeControl formControlName="paymentMethod">
+                <option value="">Select Payment Method</option>
+                <option value="Cash">Cash</option>
+                <option value="Credit Card">Credit Card</option>
+                <option value="Debit Card">Debit Card</option>
+                <option value="UPI">UPI</option>
+                <option value="Net Banking">Net Banking</option>
+                <option value="Wallet">Wallet</option>
+              </select>
+              <mat-error *ngIf="paymentForm.get('paymentMethod')?.hasError('required')">
+                Payment method is required
+              </mat-error>
+            </mat-form-field>
+
+            <mat-form-field appearance="outline" class="full-width">
+              <mat-label>Payment Status</mat-label>
+              <mat-icon matPrefix>check_circle</mat-icon>
+              <select matNativeControl formControlName="paymentStatus">
+                <option value="">Select Payment Status</option>
+                <option value="Paid">Paid</option>
+                <option value="Not Paid">Not Paid (Pay Later)</option>
+              </select>
+              <mat-error *ngIf="paymentForm.get('paymentStatus')?.hasError('required')">
+                Payment status is required
+              </mat-error>
+            </mat-form-field>
+
+            <div class="payment-note">
+              <mat-icon>info</mat-icon>
+              <p>
+                <strong>Note:</strong> This is a simplified payment confirmation. 
+                Select your preferred payment method and confirm whether you have paid or will pay later. 
+                A confirmation email will be sent to your registered email address.
+              </p>
+            </div>
+          </form>
+        </mat-card-content>
+
+        <mat-card-actions>
+          <button mat-button (click)="backToPassengerDetails()">
+            <mat-icon>arrow_back</mat-icon>
+            Back to Passenger Details
+          </button>
+          <button 
+            mat-raised-button 
+            color="primary" 
+            (click)="confirmBooking()"
+            [disabled]="isBooking || !paymentForm.valid">
+            <mat-spinner diameter="20" *ngIf="isBooking"></mat-spinner>
+            <span *ngIf="!isBooking">Confirm Booking & Send Email</span>
+            <span *ngIf="isBooking">Processing...</span>
+          </button>
+        </mat-card-actions>
+      </mat-card>
+    </div>
+  </div>
+</div>

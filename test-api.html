@@ -1,0 +1,200 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>API Test</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 50px auto;
+            padding: 20px;
+        }
+        .test-section {
+            margin: 20px 0;
+            padding: 20px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+        }
+        button {
+            background: #007bff;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+        }
+        button:hover {
+            background: #0056b3;
+        }
+        .result {
+            margin-top: 10px;
+            padding: 10px;
+            background: #f8f9fa;
+            border-radius: 5px;
+            white-space: pre-wrap;
+            font-family: monospace;
+        }
+        .success {
+            background: #d4edda;
+            color: #155724;
+        }
+        .error {
+            background: #f8d7da;
+            color: #721c24;
+        }
+        h1 {
+            color: #333;
+        }
+        h2 {
+            color: #666;
+        }
+    </style>
+</head>
+<body>
+    <h1>🔧 Bus Booking API Test</h1>
+    <p>This page tests if the backend API is accessible from the browser.</p>
+
+    <div class="test-section">
+        <h2>Test 1: Get Bus Details</h2>
+        <p>Tests: <code>GET /api/buses/{id}</code></p>
+        <button onclick="testGetBusDetails()">Run Test</button>
+        <div id="test1-result" class="result" style="display: none;"></div>
+    </div>
+
+    <div class="test-section">
+        <h2>Test 2: Get Booked Seats</h2>
+        <p>Tests: <code>GET /api/bookings/booked-seats/{busId}</code></p>
+        <button onclick="testGetBookedSeats()">Run Test</button>
+        <div id="test2-result" class="result" style="display: none;"></div>
+    </div>
+
+    <div class="test-section">
+        <h2>Test 3: Search Buses</h2>
+        <p>Tests: <code>GET /api/buses/search</code></p>
+        <button onclick="testSearchBuses()">Run Test</button>
+        <div id="test3-result" class="result" style="display: none;"></div>
+    </div>
+
+    <div class="test-section">
+        <h2>Instructions</h2>
+        <ol>
+            <li>Make sure backend is running on <code>http://localhost:5233</code></li>
+            <li>Click each "Run Test" button</li>
+            <li>Check the results below each button</li>
+            <li>✅ Green = Success, ❌ Red = Error</li>
+        </ol>
+    </div>
+
+    <script>
+        const API_URL = 'http://localhost:5233/api';
+        const BUS_ID = 'a325d4af-2093-4fcb-a261-2bf74b6ab697';
+
+        function showResult(elementId, success, message, data = null) {
+            const element = document.getElementById(elementId);
+            element.style.display = 'block';
+            element.className = success ? 'result success' : 'result error';
+            
+            let content = success ? '✅ SUCCESS\n\n' : '❌ ERROR\n\n';
+            content += message + '\n\n';
+            
+            if (data) {
+                content += 'Response:\n' + JSON.stringify(data, null, 2);
+            }
+            
+            element.textContent = content;
+        }
+
+        async function testGetBusDetails() {
+            const url = `${API_URL}/buses/${BUS_ID}`;
+            console.log('Testing:', url);
+            
+            try {
+                const response = await fetch(url);
+                console.log('Response status:', response.status);
+                
+                if (!response.ok) {
+                    throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+                }
+                
+                const data = await response.json();
+                console.log('Response data:', data);
+                
+                showResult('test1-result', true, 
+                    `API is accessible!\nStatus: ${response.status} OK\nBus Name: ${data.busName}\nTotal Seats: ${data.totalSeats}`,
+                    data
+                );
+            } catch (error) {
+                console.error('Error:', error);
+                showResult('test1-result', false, 
+                    `Failed to fetch bus details\nError: ${error.message}\n\nPossible causes:\n- Backend not running\n- CORS not configured\n- Wrong URL`
+                );
+            }
+        }
+
+        async function testGetBookedSeats() {
+            const url = `${API_URL}/bookings/booked-seats/${BUS_ID}`;
+            console.log('Testing:', url);
+            
+            try {
+                const response = await fetch(url);
+                console.log('Response status:', response.status);
+                
+                if (!response.ok) {
+                    throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+                }
+                
+                const data = await response.json();
+                console.log('Response data:', data);
+                
+                showResult('test2-result', true, 
+                    `API is accessible!\nStatus: ${response.status} OK\nBooked Seats: ${data.length > 0 ? data.join(', ') : 'None'}`,
+                    data
+                );
+            } catch (error) {
+                console.error('Error:', error);
+                showResult('test2-result', false, 
+                    `Failed to fetch booked seats\nError: ${error.message}\n\nPossible causes:\n- Backend not running\n- CORS not configured\n- Endpoint not implemented`
+                );
+            }
+        }
+
+        async function testSearchBuses() {
+            const url = `${API_URL}/buses/search`;
+            console.log('Testing:', url);
+            
+            try {
+                const response = await fetch(url);
+                console.log('Response status:', response.status);
+                
+                if (!response.ok) {
+                    throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+                }
+                
+                const data = await response.json();
+                console.log('Response data:', data);
+                
+                showResult('test3-result', true, 
+                    `API is accessible!\nStatus: ${response.status} OK\nBuses Found: ${data.length}`,
+                    data.slice(0, 2) // Show first 2 buses only
+                );
+            } catch (error) {
+                console.error('Error:', error);
+                showResult('test3-result', false, 
+                    `Failed to search buses\nError: ${error.message}\n\nPossible causes:\n- Backend not running\n- CORS not configured\n- Database connection issue`
+                );
+            }
+        }
+
+        // Auto-run first test on page load
+        window.addEventListener('load', () => {
+            console.log('Page loaded, running automatic test...');
+            setTimeout(() => {
+                testGetBusDetails();
+            }, 500);
+        });
+    </script>
+</body>
+</html>
