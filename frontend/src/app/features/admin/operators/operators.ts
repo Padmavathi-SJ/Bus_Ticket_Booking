@@ -7,12 +7,13 @@ import { MatCardModule } from '@angular/material/card';
 import { MatChipsModule } from '@angular/material/chips';
 import { MatTooltipModule } from '@angular/material/tooltip';
 import { MatTabsModule } from '@angular/material/tabs';
+import { MatMenuModule } from '@angular/material/menu';
 import { AdminService, OperatorRequest } from '../../../core/services/admin.service';
 
 @Component({
   selector: 'app-operators',
   standalone: true,
-  imports: [CommonModule, MatTableModule, MatButtonModule, MatIconModule, MatCardModule, MatChipsModule, MatTooltipModule, MatTabsModule],
+  imports: [CommonModule, MatTableModule, MatButtonModule, MatIconModule, MatCardModule, MatChipsModule, MatTooltipModule, MatTabsModule, MatMenuModule],
   templateUrl: './operators.html',
   styleUrl: './operators.scss'
 })
@@ -37,10 +38,10 @@ export class OperatorManagement implements OnInit {
       this.displayedColumns = ['fullName', 'companyName', 'licenseNumber', 'createdAt', 'actions'];
       this.loadOperators(1); // Requests (Pending)
     } else if (index === 1) {
-      this.displayedColumns = ['fullName', 'companyName', 'licenseNumber', 'phone', 'status'];
+      this.displayedColumns = ['fullName', 'companyName', 'licenseNumber', 'phone', 'status', 'actions'];
       this.loadOperators(2); // Available (Approved)
     } else {
-      this.displayedColumns = ['fullName', 'companyName', 'status', 'createdAt'];
+      this.displayedColumns = ['fullName', 'companyName', 'status', 'createdAt', 'actions'];
       this.loadOperators(); // All
     }
   }
@@ -81,6 +82,30 @@ export class OperatorManagement implements OnInit {
           alert('Operator rejected.');
         },
         error: (err) => alert('Rejection failed: ' + err.error.message)
+      });
+    }
+  }
+
+  onEnable(id: string) {
+    if (confirm('Are you sure you want to enable this operator? All their buses will become available for booking.')) {
+      this.adminService.enableOperator(id).subscribe({
+        next: () => {
+          this.loadOperators();
+          alert('Operator enabled successfully! All buses are now available.');
+        },
+        error: (err) => alert('Enable failed: ' + err.error?.message || err.message)
+      });
+    }
+  }
+
+  onDisable(id: string) {
+    if (confirm('Are you sure you want to disable this operator? All their buses will become unavailable and active bookings will be cancelled with refunds.')) {
+      this.adminService.disableOperator(id).subscribe({
+        next: () => {
+          this.loadOperators();
+          alert('Operator disabled successfully! All buses are now unavailable and customers have been notified.');
+        },
+        error: (err) => alert('Disable failed: ' + err.error?.message || err.message)
       });
     }
   }

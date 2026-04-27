@@ -29,7 +29,7 @@ export class AdminLayout {
     { icon: 'people', label: 'Bus Operators', route: '/admin/operators' },
     { icon: 'directions_bus', label: 'Buses', route: '/admin/buses' },
     { icon: 'map', label: 'Routes', route: '/admin/routes' },
-    { icon: 'place', label: 'Stations', route: '/admin/stations' }
+    { icon: 'attach_money', label: 'Revenue', route: '/admin/revenue' }
   ];
 
   constructor(private authService: AuthService, private router: Router) {}

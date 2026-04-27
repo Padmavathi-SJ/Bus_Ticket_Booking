@@ -137,8 +137,16 @@
 
       <!-- Trip Cards -->
       <div class="bus-list" *ngIf="!isSearching && availableTrips.length > 0">
-        <mat-card *ngFor="let trip of availableTrips" class="bus-card trip-card">
+        <mat-card *ngFor="let trip of availableTrips" class="bus-card trip-card" [ngClass]="{'disabled-bus': !trip.isAvailable}">
           <mat-card-content>
+            <!-- Disabled Overlay -->
+            <div class="disabled-overlay" *ngIf="!trip.isAvailable">
+              <div class="disabled-badge">
+                <mat-icon>block</mat-icon>
+                <span>Temporarily Unavailable</span>
+              </div>
+            </div>
+
             <div class="bus-card-layout">
               <!-- Left Section: Bus & Trip Details -->
               <div class="bus-details">
@@ -289,20 +297,26 @@
                   color="warn" 
                   (click)="bookNow(trip.tripId)" 
                   class="book-btn"
-                  [disabled]="trip.availableSeats === 0">
+                  [disabled]="trip.availableSeats === 0 || !trip.isAvailable">
                   <mat-icon>event_seat</mat-icon>
-                  <span *ngIf="isLoggedIn">BOOK THIS TRIP</span>
-                  <span *ngIf="!isLoggedIn">LOGIN TO BOOK</span>
+                  <span *ngIf="isLoggedIn && trip.isAvailable">BOOK THIS TRIP</span>
+                  <span *ngIf="!isLoggedIn && trip.isAvailable">LOGIN TO BOOK</span>
+                  <span *ngIf="!trip.isAvailable">UNAVAILABLE</span>
                 </button>
 
-                <p class="booking-note" *ngIf="!isLoggedIn">
+                <p class="booking-note" *ngIf="!isLoggedIn && trip.isAvailable">
                   <mat-icon>info</mat-icon>
                   Please login to book tickets
                 </p>
 
-                <p class="availability-note" *ngIf="trip.availableSeats === 0">
+                <p class="availability-note" *ngIf="trip.availableSeats === 0 && trip.isAvailable">
                   <mat-icon>error</mat-icon>
                   Fully Booked
+                </p>
+
+                <p class="unavailable-note" *ngIf="!trip.isAvailable">
+                  <mat-icon>block</mat-icon>
+                  Bus temporarily disabled by admin
                 </p>
               </div>
             </div>

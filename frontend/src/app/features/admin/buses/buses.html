@@ -49,8 +49,8 @@
               <td mat-cell *matCellDef="let bus">
                 <div class="seat-info">
                   <span class="total">{{bus.totalSeats}} Total</span>
-                  <button mat-icon-button (click)="toggleBusDetails(bus.id); $event.stopPropagation()" matTooltip="View Seat Layout">
-                    <mat-icon>{{expandedBusId === bus.id ? 'expand_less' : 'expand_more'}}</mat-icon>
+                  <button mat-icon-button (click)="openSeatLayoutDialog(bus); $event.stopPropagation()" matTooltip="View Seat Layout" color="primary">
+                    <mat-icon>visibility</mat-icon>
                   </button>
                 </div>
               </td>
@@ -78,78 +78,7 @@
             </ng-container>
 
             <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
-            <tr mat-row *matRowDef="let row; columns: displayedColumns;" [class.expanded-row]="expandedBusId === row.id"></tr>
-            
-            <!-- Expanded Row for Seat Layout -->
-            <tr class="detail-row" *ngIf="expandedBusId">
-              <td colspan="7" class="detail-cell">
-                <div class="seat-layout-container" *ngFor="let bus of busRequests">
-                  <div *ngIf="expandedBusId === bus.id" class="seat-layout-content">
-                    <h3>Seat Layout - {{bus.busName}}</h3>
-                    
-                    <div class="seat-stats">
-                      <div class="stat-item">
-                        <mat-icon>event_seat</mat-icon>
-                        <span>Total: {{bus.totalSeats}}</span>
-                      </div>
-                      <div class="stat-item female">
-                        <mat-icon>female</mat-icon>
-                        <span>Female: {{bus.femaleSeats}}</span>
-                      </div>
-                      <div class="stat-item male">
-                        <mat-icon>male</mat-icon>
-                        <span>Male: {{bus.maleSeats}}</span>
-                      </div>
-                      <div class="stat-item general">
-                        <mat-icon>people</mat-icon>
-                        <span>General: {{bus.totalSeats - bus.femaleSeats - bus.maleSeats}}</span>
-                      </div>
-                    </div>
-
-                    <div class="seat-legend">
-                      <div class="legend-item">
-                        <div class="seat-icon female-seat"></div>
-                        <span>Female Reserved</span>
-                      </div>
-                      <div class="legend-item">
-                        <div class="seat-icon male-seat"></div>
-                        <span>Male Reserved</span>
-                      </div>
-                      <div class="legend-item">
-                        <div class="seat-icon general-seat"></div>
-                        <span>General</span>
-                      </div>
-                    </div>
-
-                    <div class="bus-layout">
-                      <div class="driver-section">
-                        <mat-icon>drive_eta</mat-icon>
-                        <span>Driver</span>
-                      </div>
-
-                      <div class="seats-grid">
-                        <div class="seat-row" *ngFor="let row of generateSeatLayout(bus.totalSeats, bus.femaleSeats, bus.maleSeats); let rowIndex = index">
-                          <span class="row-number">{{rowIndex + 1}}</span>
-                          
-                          <div class="seats-container">
-                            <div 
-                              *ngFor="let seat of row; let colIndex = index"
-                              class="seat-display"
-                              [class.female-seat]="seat.type === 'female'"
-                              [class.male-seat]="seat.type === 'male'"
-                              [class.general-seat]="seat.type === 'general'"
-                              [class.aisle-gap]="colIndex === 1">
-                              <mat-icon>event_seat</mat-icon>
-                              <span class="seat-number">{{seat.number}}</span>
-                            </div>
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              </td>
-            </tr>
+            <tr mat-row *matRowDef="let row; columns: displayedColumns;"></tr>
 
             <tr class="mat-row" *matNoDataRow>
               <td class="mat-cell empty-cell" colspan="7">No pending bus requests.</td>
@@ -189,8 +118,8 @@
               <td mat-cell *matCellDef="let bus">
                 <div class="seat-info">
                   <span class="total">{{bus.totalSeats}} Total</span>
-                  <button mat-icon-button (click)="toggleBusDetails(bus.id); $event.stopPropagation()" matTooltip="View Seat Layout">
-                    <mat-icon>{{expandedBusId === bus.id ? 'expand_less' : 'expand_more'}}</mat-icon>
+                  <button mat-icon-button (click)="openSeatLayoutDialog(bus); $event.stopPropagation()" matTooltip="View Seat Layout" color="primary">
+                    <mat-icon>visibility</mat-icon>
                   </button>
                 </div>
               </td>
@@ -207,78 +136,7 @@
             </ng-container>
 
             <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
-            <tr mat-row *matRowDef="let row; columns: displayedColumns;" [class.expanded-row]="expandedBusId === row.id"></tr>
-            
-            <!-- Expanded Row for Seat Layout -->
-            <tr class="detail-row" *ngIf="expandedBusId">
-              <td colspan="7" class="detail-cell">
-                <div class="seat-layout-container" *ngFor="let bus of activeBuses">
-                  <div *ngIf="expandedBusId === bus.id" class="seat-layout-content">
-                    <h3>Seat Layout - {{bus.busName}}</h3>
-                    
-                    <div class="seat-stats">
-                      <div class="stat-item">
-                        <mat-icon>event_seat</mat-icon>
-                        <span>Total: {{bus.totalSeats}}</span>
-                      </div>
-                      <div class="stat-item female">
-                        <mat-icon>female</mat-icon>
-                        <span>Female: {{bus.femaleSeats}}</span>
-                      </div>
-                      <div class="stat-item male">
-                        <mat-icon>male</mat-icon>
-                        <span>Male: {{bus.maleSeats}}</span>
-                      </div>
-                      <div class="stat-item general">
-                        <mat-icon>people</mat-icon>
-                        <span>General: {{bus.totalSeats - bus.femaleSeats - bus.maleSeats}}</span>
-                      </div>
-                    </div>
-
-                    <div class="seat-legend">
-                      <div class="legend-item">
-                        <div class="seat-icon female-seat"></div>
-                        <span>Female Reserved</span>
-                      </div>
-                      <div class="legend-item">
-                        <div class="seat-icon male-seat"></div>
-                        <span>Male Reserved</span>
-                      </div>
-                      <div class="legend-item">
-                        <div class="seat-icon general-seat"></div>
-                        <span>General</span>
-                      </div>
-                    </div>
-
-                    <div class="bus-layout">
-                      <div class="driver-section">
-                        <mat-icon>drive_eta</mat-icon>
-                        <span>Driver</span>
-                      </div>
-
-                      <div class="seats-grid">
-                        <div class="seat-row" *ngFor="let row of generateSeatLayout(bus.totalSeats, bus.femaleSeats, bus.maleSeats); let rowIndex = index">
-                          <span class="row-number">{{rowIndex + 1}}</span>
-                          
-                          <div class="seats-container">
-                            <div 
-                              *ngFor="let seat of row; let colIndex = index"
-                              class="seat-display"
-                              [class.female-seat]="seat.type === 'female'"
-                              [class.male-seat]="seat.type === 'male'"
-                              [class.general-seat]="seat.type === 'general'"
-                              [class.aisle-gap]="colIndex === 1">
-                              <mat-icon>event_seat</mat-icon>
-                              <span class="seat-number">{{seat.number}}</span>
-                            </div>
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              </td>
-            </tr>
+            <tr mat-row *matRowDef="let row; columns: displayedColumns;"></tr>
 
             <tr class="mat-row" *matNoDataRow>
               <td class="mat-cell empty-cell" colspan="7">No active buses found.</td>
@@ -318,8 +176,8 @@
               <td mat-cell *matCellDef="let bus">
                 <div class="seat-info">
                   <span class="total">{{bus.totalSeats}} Total</span>
-                  <button mat-icon-button (click)="toggleBusDetails(bus.id); $event.stopPropagation()" matTooltip="View Seat Layout">
-                    <mat-icon>{{expandedBusId === bus.id ? 'expand_less' : 'expand_more'}}</mat-icon>
+                  <button mat-icon-button (click)="openSeatLayoutDialog(bus); $event.stopPropagation()" matTooltip="View Seat Layout" color="primary">
+                    <mat-icon>visibility</mat-icon>
                   </button>
                 </div>
               </td>
@@ -338,78 +196,7 @@
             </ng-container>
 
             <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
-            <tr mat-row *matRowDef="let row; columns: displayedColumns;" [class.expanded-row]="expandedBusId === row.id"></tr>
-            
-            <!-- Expanded Row for Seat Layout -->
-            <tr class="detail-row" *ngIf="expandedBusId">
-              <td colspan="7" class="detail-cell">
-                <div class="seat-layout-container" *ngFor="let bus of allBuses">
-                  <div *ngIf="expandedBusId === bus.id" class="seat-layout-content">
-                    <h3>Seat Layout - {{bus.busName}}</h3>
-                    
-                    <div class="seat-stats">
-                      <div class="stat-item">
-                        <mat-icon>event_seat</mat-icon>
-                        <span>Total: {{bus.totalSeats}}</span>
-                      </div>
-                      <div class="stat-item female">
-                        <mat-icon>female</mat-icon>
-                        <span>Female: {{bus.femaleSeats}}</span>
-                      </div>
-                      <div class="stat-item male">
-                        <mat-icon>male</mat-icon>
-                        <span>Male: {{bus.maleSeats}}</span>
-                      </div>
-                      <div class="stat-item general">
-                        <mat-icon>people</mat-icon>
-                        <span>General: {{bus.totalSeats - bus.femaleSeats - bus.maleSeats}}</span>
-                      </div>
-                    </div>
-
-                    <div class="seat-legend">
-                      <div class="legend-item">
-                        <div class="seat-icon female-seat"></div>
-                        <span>Female Reserved</span>
-                      </div>
-                      <div class="legend-item">
-                        <div class="seat-icon male-seat"></div>
-                        <span>Male Reserved</span>
-                      </div>
-                      <div class="legend-item">
-                        <div class="seat-icon general-seat"></div>
-                        <span>General</span>
-                      </div>
-                    </div>
-
-                    <div class="bus-layout">
-                      <div class="driver-section">
-                        <mat-icon>drive_eta</mat-icon>
-                        <span>Driver</span>
-                      </div>
-
-                      <div class="seats-grid">
-                        <div class="seat-row" *ngFor="let row of generateSeatLayout(bus.totalSeats, bus.femaleSeats, bus.maleSeats); let rowIndex = index">
-                          <span class="row-number">{{rowIndex + 1}}</span>
-                          
-                          <div class="seats-container">
-                            <div 
-                              *ngFor="let seat of row; let colIndex = index"
-                              class="seat-display"
-                              [class.female-seat]="seat.type === 'female'"
-                              [class.male-seat]="seat.type === 'male'"
-                              [class.general-seat]="seat.type === 'general'"
-                              [class.aisle-gap]="colIndex === 1">
-                              <mat-icon>event_seat</mat-icon>
-                              <span class="seat-number">{{seat.number}}</span>
-                            </div>
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              </td>
-            </tr>
+            <tr mat-row *matRowDef="let row; columns: displayedColumns;"></tr>
 
             <tr class="mat-row" *matNoDataRow>
               <td class="mat-cell empty-cell" colspan="7">No buses found.</td>

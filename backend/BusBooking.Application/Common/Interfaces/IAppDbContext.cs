@@ -16,6 +16,7 @@ public interface IAppDbContext
     DbSet<TripPricing> TripPricings { get; }
     DbSet<Booking> Bookings { get; }
     DbSet<BookingSeat> BookingSeats { get; }
+    DbSet<Payment> Payments { get; }
     DbSet<SeatLayout> SeatLayouts { get; }
     DbSet<Notification> Notifications { get; }
     

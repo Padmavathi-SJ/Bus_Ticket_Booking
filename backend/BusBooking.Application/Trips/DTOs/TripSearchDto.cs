@@ -30,4 +30,5 @@ public class TripSearchDto
     public decimal BasePrice { get; set; }
     public int BookedSeats { get; set; }
     public int AvailableSeats { get; set; }
+    public bool IsAvailable { get; set; } // Bus availability status
 }

@@ -14,6 +14,8 @@ public class CreateBusCommand : IRequest<Guid>
     [Required] public string BusName { get; set; } = string.Empty;
     [Required] public string BusType { get; set; } = string.Empty;
     [Required] public int TotalSeats { get; set; }
+    [Required] public int FemaleSeats { get; set; }
+    [Required] public int MaleSeats { get; set; }
     [Required] public double BasePrice { get; set; }
     public string Amenities { get; set; } = string.Empty;
     
@@ -72,6 +74,8 @@ public class CreateBusCommandHandler : IRequestHandler<CreateBusCommand, Guid>
             BusName = request.BusName,
             BusType = request.BusType,
             TotalSeats = request.TotalSeats,
+            FemaleSeats = request.FemaleSeats,
+            MaleSeats = request.MaleSeats,
             BasePrice = request.BasePrice,
             Amenities = request.Amenities,
             Status = BusStatus.Pending,

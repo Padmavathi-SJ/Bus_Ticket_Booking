@@ -18,6 +18,9 @@ public class SearchTripsQueryHandler : IRequestHandler<SearchTripsQuery, List<Tr
 
     public async Task<List<TripSearchDto>> Handle(SearchTripsQuery request, CancellationToken cancellationToken)
     {
+        Console.WriteLine($"[DEBUG-SEARCH] ========== SEARCH TRIPS QUERY ==========");
+        Console.WriteLine($"[DEBUG-SEARCH] Filters - Source: {request.Source ?? "ANY"}, Destination: {request.Destination ?? "ANY"}, Date: {request.TripDate?.ToString("yyyy-MM-dd") ?? "TODAY+"}");
+        
         var query = _context.Trips
             .Include(t => t.Bus)
                 .ThenInclude(b => b.Operator)
@@ -26,8 +29,10 @@ public class SearchTripsQueryHandler : IRequestHandler<SearchTripsQuery, List<Tr
             .Include(t => t.Pricing)
             .Where(t => t.Status == Domain.Enums.TripStatus.Scheduled)
             .Where(t => t.Bus.Status == Domain.Enums.BusStatus.Approved)
-            .Where(t => t.Bus.IsAvailable)
+            .Where(t => t.Bus.IsAvailable == true) // Only show available buses
             .AsQueryable();
+
+        Console.WriteLine($"[DEBUG-SEARCH] Initial query filters applied: TripStatus=Scheduled, BusStatus=Approved, IsAvailable=true");
 
         // Filter by date if provided
         if (request.TripDate.HasValue)
@@ -96,15 +101,32 @@ public class SearchTripsQueryHandler : IRequestHandler<SearchTripsQuery, List<Tr
                 
                 // Availability
                 BookedSeats = t.Bookings.Count(b => b.Status == Domain.Enums.BookingStatus.Confirmed),
-                AvailableSeats = t.Bus.TotalSeats - t.Bookings.Count(b => b.Status == Domain.Enums.BookingStatus.Confirmed)
+                AvailableSeats = t.Bus.TotalSeats - t.Bookings.Count(b => b.Status == Domain.Enums.BookingStatus.Confirmed),
+                IsAvailable = t.Bus.IsAvailable
             })
             .ToListAsync(cancellationToken);
 
+        Console.WriteLine($"[DEBUG-SEARCH] ========== RESULTS ==========");
         Console.WriteLine($"[DEBUG-SEARCH] Query returned {trips.Count} trips");
-        foreach (var trip in trips.Take(5))
+        
+        if (trips.Count == 0)
         {
-            Console.WriteLine($"[DEBUG-SEARCH] Trip: {trip.BusName} on {trip.TripDate:yyyy-MM-dd} at {trip.DepartureTime}");
+            Console.WriteLine($"[DEBUG-SEARCH] ⚠️ NO TRIPS FOUND!");
+            Console.WriteLine($"[DEBUG-SEARCH] Possible reasons:");
+            Console.WriteLine($"[DEBUG-SEARCH]   1. No trips scheduled for available buses");
+            Console.WriteLine($"[DEBUG-SEARCH]   2. All trips are in the past");
+            Console.WriteLine($"[DEBUG-SEARCH]   3. No buses match the search criteria");
+            Console.WriteLine($"[DEBUG-SEARCH]   4. Buses exist but have IsAvailable=false");
         }
+        else
+        {
+            Console.WriteLine($"[DEBUG-SEARCH] Found {trips.Count} trip(s):");
+            foreach (var trip in trips.Take(10))
+            {
+                Console.WriteLine($"[DEBUG-SEARCH]   - {trip.BusName} ({trip.BusNumber}) | {trip.SourceAddress} → {trip.DestinationAddress} | {trip.TripDate:yyyy-MM-dd} {trip.DepartureTime} | IsAvailable={trip.IsAvailable}");
+            }
+        }
+        Console.WriteLine($"[DEBUG-SEARCH] =====================================");
 
         return trips;
     }

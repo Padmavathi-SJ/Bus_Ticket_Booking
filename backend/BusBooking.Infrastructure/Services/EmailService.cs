@@ -584,5 +584,64 @@ public class EmailService : IEmailService
 </body>
 </html>";
     }
-}
 
+    public async Task SendEmailAsync(
+        string toEmail,
+        string subject,
+        string htmlBody,
+        CancellationToken cancellationToken = default)
+    {
+        try
+        {
+            var message = new MimeMessage();
+            
+            // From
+            var fromEmail = _configuration["EmailSettings:FromEmail"];
+            var fromName = _configuration["EmailSettings:FromName"];
+            message.From.Add(new MailboxAddress(fromName, fromEmail));
+            
+            // To
+            message.To.Add(new MailboxAddress("", toEmail));
+            
+            // Subject
+            message.Subject = subject;
+            
+            // Body
+            var bodyBuilder = new BodyBuilder
+            {
+                HtmlBody = htmlBody
+            };
+            
+            message.Body = bodyBuilder.ToMessageBody();
+            
+            // Send email
+            using var client = new SmtpClient();
+            
+            var smtpHost = _configuration["EmailSettings:SmtpHost"];
+            var smtpPort = int.Parse(_configuration["EmailSettings:SmtpPort"] ?? "587");
+            var smtpUser = _configuration["EmailSettings:SmtpUser"];
+            var smtpPass = _configuration["EmailSettings:SmtpPass"];
+            var enableSsl = bool.Parse(_configuration["EmailSettings:EnableSsl"] ?? "true");
+            
+            Console.WriteLine($"[EMAIL] Connecting to SMTP server: {smtpHost}:{smtpPort}");
+            
+            await client.ConnectAsync(smtpHost, smtpPort, enableSsl ? SecureSocketOptions.StartTls : SecureSocketOptions.None, cancellationToken);
+            
+            Console.WriteLine($"[EMAIL] Authenticating with user: {smtpUser}");
+            await client.AuthenticateAsync(smtpUser, smtpPass, cancellationToken);
+            
+            Console.WriteLine($"[EMAIL] Sending email to: {toEmail}");
+            await client.SendAsync(message, cancellationToken);
+            
+            await client.DisconnectAsync(true, cancellationToken);
+            
+            Console.WriteLine($"[EMAIL] Email sent successfully to {toEmail}");
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"[EMAIL-ERROR] Failed to send email to {toEmail}: {ex.Message}");
+            Console.WriteLine($"[EMAIL-ERROR] Stack trace: {ex.StackTrace}");
+            // Don't throw - we don't want email failures to break the process
+        }
+    }
+}

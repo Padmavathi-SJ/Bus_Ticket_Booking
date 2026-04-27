@@ -16,7 +16,7 @@
 .tab-content { padding: 24px 0; min-height: 400px; }
 
 .bus-grid { 
-  display: grid; 
+  display: grid;  
   grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); 
   gap: 24px; 
 }
@@ -37,9 +37,39 @@
 
   .status-badge {
     padding: 4px 10px; border-radius: 6px; font-size: 11px; font-weight: 700; text-transform: uppercase;
-    &.pending { background: #fef3c7; color: #92400e; }
-    &.approved { background: #dcfce7; color: #166534; }
-    &.rejected { background: #fee2e2; color: #991b1b; }
+    &.pending { 
+      background: #fef3c7; 
+      color: #92400e; 
+      border: 1px solid #fbbf24;
+    }
+    &.approved { 
+      background: #dcfce7; 
+      color: #166534; 
+      border: 1px solid #22c55e;
+    }
+    &.rejected { 
+      background: #fee2e2; 
+      color: #991b1b; 
+      border: 1px solid #f87171;
+      animation: shake 0.5s ease;
+    }
+    &.disabled { 
+      background: #fecaca; 
+      color: #991b1b; 
+      border: 1px solid #f87171;
+      animation: pulse 2s ease-in-out infinite;
+    }
+  }
+
+  @keyframes pulse {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.7; }
+  }
+
+  @keyframes shake {
+    0%, 100% { transform: translateX(0); }
+    25% { transform: translateX(-5px); }
+    75% { transform: translateX(5px); }
   }
 
   .bus-details {
@@ -47,9 +77,145 @@
     mat-icon { font-size: 20px; width: 20px; height: 20px; color: #94a3b8; }
   }
 
-  .rejection-box {
-    margin-top: 16px; padding: 12px; background: #fff1f2; border-radius: 8px;
-    color: #9f1239; font-size: 13px; line-height: 1.4; border-left: 4px solid #f43f5e;
+  // Status Notice Boxes (Disabled, Rejected, Pending)
+  .status-notice {
+    margin-top: 16px;
+    padding: 16px;
+    border-radius: 8px;
+    display: flex;
+    gap: 12px;
+    align-items: flex-start;
+    animation: slideIn 0.3s ease;
+
+    mat-icon {
+      font-size: 28px;
+      width: 28px;
+      height: 28px;
+      flex-shrink: 0;
+    }
+
+    div {
+      flex: 1;
+
+      strong {
+        display: block;
+        font-size: 15px;
+        font-weight: 700;
+        margin-bottom: 6px;
+      }
+
+      p {
+        font-size: 13px;
+        line-height: 1.5;
+        margin: 0;
+      }
+    }
+
+    // Disabled status styling
+    &.disabled-notice {
+      background: linear-gradient(135deg, #fef2f2 0%, #fee2e2 100%);
+      border-left: 4px solid #ef4444;
+
+      mat-icon {
+        color: #dc2626;
+      }
+
+      strong {
+        color: #991b1b;
+      }
+
+      p {
+        color: #7f1d1d;
+      }
+    }
+
+    // Rejected status styling
+    &.rejected-notice {
+      background: linear-gradient(135deg, #fef2f2 0%, #fecaca 100%);
+      border-left: 4px solid #dc2626;
+
+      mat-icon {
+        color: #b91c1c;
+      }
+
+      strong {
+        color: #7f1d1d;
+      }
+
+      p {
+        color: #7f1d1d;
+      }
+    }
+
+    // Pending status styling
+    &.pending-notice {
+      background: linear-gradient(135deg, #fffbeb 0%, #fef3c7 100%);
+      border-left: 4px solid #f59e0b;
+
+      mat-icon {
+        color: #d97706;
+      }
+
+      strong {
+        color: #92400e;
+      }
+
+      p {
+        color: #78350f;
+      }
+    }
+  }
+
+  // Rejection Reason Box
+  .rejection-reason-box {
+    margin-top: 12px;
+    padding: 14px;
+    background: #fff;
+    border: 2px solid #fca5a5;
+    border-radius: 8px;
+    box-shadow: 0 2px 4px rgba(220, 38, 38, 0.1);
+
+    .reason-header {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin-bottom: 8px;
+      color: #991b1b;
+
+      mat-icon {
+        font-size: 20px;
+        width: 20px;
+        height: 20px;
+      }
+
+      strong {
+        font-size: 14px;
+        font-weight: 700;
+      }
+    }
+
+    .reason-text {
+      margin: 0;
+      padding: 10px;
+      background: #fef2f2;
+      border-radius: 6px;
+      color: #7f1d1d;
+      font-size: 13px;
+      line-height: 1.6;
+      font-style: italic;
+      border-left: 3px solid #f87171;
+    }
+  }
+
+  @keyframes slideIn {
+    from {
+      opacity: 0;
+      transform: translateX(-10px);
+    }
+    to {
+      opacity: 1;
+      transform: translateX(0);
+    }
   }
 }
 

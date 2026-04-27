@@ -1,0 +1,172 @@
+<div class="revenue-container">
+  <div class="header">
+    <div class="header-content">
+      <h1>Revenue Management</h1>
+      <p>Track and analyze revenue across all buses</p>
+    </div>
+    
+    <!-- Date Range Filter -->
+    <div class="date-filter">
+      <mat-form-field appearance="outline">
+        <mat-label>Start Date</mat-label>
+        <input matInput [matDatepicker]="startPicker" [(ngModel)]="startDate" (dateChange)="onDateRangeChange()">
+        <mat-datepicker-toggle matIconSuffix [for]="startPicker"></mat-datepicker-toggle>
+        <mat-datepicker #startPicker></mat-datepicker>
+      </mat-form-field>
+      
+      <mat-form-field appearance="outline">
+        <mat-label>End Date</mat-label>
+        <input matInput [matDatepicker]="endPicker" [(ngModel)]="endDate" (dateChange)="onDateRangeChange()">
+        <mat-datepicker-toggle matIconSuffix [for]="endPicker"></mat-datepicker-toggle>
+        <mat-datepicker #endPicker></mat-datepicker>
+      </mat-form-field>
+      
+      <button mat-raised-button color="primary" (click)="loadRevenueData()">
+        <mat-icon>refresh</mat-icon>
+        Refresh
+      </button>
+    </div>
+  </div>
+
+  <!-- Loading State -->
+  <div class="loading-state" *ngIf="isLoading">
+    <mat-spinner diameter="50"></mat-spinner>
+    <p>Loading revenue data...</p>
+  </div>
+
+  <!-- Revenue Content -->
+  <div class="revenue-content" *ngIf="!isLoading && revenueData">
+    
+    <!-- Total Revenue Card -->
+    <mat-card class="total-revenue-card">
+      <mat-card-content>
+        <div class="revenue-icon">
+          <mat-icon>account_balance_wallet</mat-icon>
+        </div>
+        <div class="revenue-info">
+          <span class="label">Total Revenue (Confirmed Bookings)</span>
+          <h2 class="amount">{{formatRevenue(revenueData.totalRevenue)}}</h2>
+          <span class="period">For selected period</span>
+        </div>
+      </mat-card-content>
+    </mat-card>
+
+    <!-- Daily Revenue Chart -->
+    <mat-card class="chart-card" *ngIf="revenueData.dailyRevenues.length > 0">
+      <mat-card-header>
+        <mat-card-title>
+          <mat-icon>show_chart</mat-icon>
+          Daily Revenue Trend
+        </mat-card-title>
+      </mat-card-header>
+      <mat-card-content>
+        <div class="chart-container">
+          <div class="chart-bars">
+            <div class="bar-wrapper" *ngFor="let daily of revenueData.dailyRevenues">
+              <div class="bar" [style.height]="getBarHeight(daily.revenue)">
+                <div class="bar-tooltip">
+                  <strong>{{formatDate(daily.date)}}</strong>
+                  <span>{{formatRevenue(daily.revenue)}}</span>
+                  <span>{{daily.bookings}} bookings</span>
+                </div>
+              </div>
+              <span class="bar-label">{{formatDate(daily.date).split(' ')[0]}}</span>
+            </div>
+          </div>
+        </div>
+      </mat-card-content>
+    </mat-card>
+
+    <!-- Bus-wise Revenue Table -->
+    <mat-card class="table-card">
+      <mat-card-header>
+        <mat-card-title>
+          <mat-icon>directions_bus</mat-icon>
+          Bus-wise Revenue Breakdown
+        </mat-card-title>
+      </mat-card-header>
+      <mat-card-content>
+        <div class="table-container">
+          <table mat-table [dataSource]="revenueData.busRevenues" class="revenue-table">
+            
+            <!-- Bus Name Column -->
+            <ng-container matColumnDef="busName">
+              <th mat-header-cell *matHeaderCellDef>Bus Name</th>
+              <td mat-cell *matCellDef="let bus">
+                <div class="bus-info">
+                  <mat-icon>directions_bus</mat-icon>
+                  <span class="bus-name">{{bus.busName}}</span>
+                </div>
+              </td>
+            </ng-container>
+
+            <!-- Bus Number Column -->
+            <ng-container matColumnDef="busNumber">
+              <th mat-header-cell *matHeaderCellDef>Bus Number</th>
+              <td mat-cell *matCellDef="let bus">
+                <span class="bus-number">{{bus.busNumber}}</span>
+              </td>
+            </ng-container>
+
+            <!-- Bus Type Column -->
+            <ng-container matColumnDef="busType">
+              <th mat-header-cell *matHeaderCellDef>Type</th>
+              <td mat-cell *matCellDef="let bus">
+                <span class="bus-type">{{bus.busType}}</span>
+              </td>
+            </ng-container>
+
+            <!-- Operator Name Column -->
+            <ng-container matColumnDef="operatorName">
+              <th mat-header-cell *matHeaderCellDef>Operator</th>
+              <td mat-cell *matCellDef="let bus">
+                <span class="operator-name">{{bus.operatorName || 'Admin'}}</span>
+              </td>
+            </ng-container>
+
+            <!-- Total Bookings Column -->
+            <ng-container matColumnDef="totalBookings">
+              <th mat-header-cell *matHeaderCellDef>Total Bookings</th>
+              <td mat-cell *matCellDef="let bus">
+                <span class="stat-value">{{bus.totalBookings}}</span>
+              </td>
+            </ng-container>
+
+            <!-- Confirmed Bookings Column -->
+            <ng-container matColumnDef="confirmedBookings">
+              <th mat-header-cell *matHeaderCellDef>Confirmed</th>
+              <td mat-cell *matCellDef="let bus">
+                <span class="stat-value confirmed">{{bus.confirmedBookings}}</span>
+              </td>
+            </ng-container>
+
+            <!-- Cancelled Bookings Column -->
+            <ng-container matColumnDef="cancelledBookings">
+              <th mat-header-cell *matHeaderCellDef>Cancelled</th>
+              <td mat-cell *matCellDef="let bus">
+                <span class="stat-value cancelled">{{bus.cancelledBookings}}</span>
+              </td>
+            </ng-container>
+
+            <!-- Confirmed Revenue Column -->
+            <ng-container matColumnDef="confirmedRevenue">
+              <th mat-header-cell *matHeaderCellDef>Revenue</th>
+              <td mat-cell *matCellDef="let bus">
+                <span class="revenue-amount">{{formatRevenue(bus.confirmedRevenue)}}</span>
+              </td>
+            </ng-container>
+
+            <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
+            <tr mat-row *matRowDef="let row; columns: displayedColumns;"></tr>
+          </table>
+        </div>
+
+        <!-- Empty State -->
+        <div class="empty-state" *ngIf="revenueData.busRevenues.length === 0">
+          <mat-icon>inbox</mat-icon>
+          <p>No revenue data available for the selected period</p>
+        </div>
+      </mat-card-content>
+    </mat-card>
+  </div>
+</div>

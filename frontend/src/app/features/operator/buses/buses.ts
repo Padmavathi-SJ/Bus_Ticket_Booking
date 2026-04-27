@@ -100,9 +100,33 @@ export class OperatorBusManagement implements OnInit {
     this.operatorService.getMyBuses().subscribe({
       next: (data: any[]) => {
         console.log('Operator Buses Data:', data);
-        this.allBuses = data;
-        // Filter active buses (Status 2 = Approved) - check both camelCase and PascalCase
-        this.activeBuses = data.filter(b => (b.status === 2 || b.Status === 2));
+        
+        // Map the data to ensure consistent property names (camelCase)
+        this.allBuses = data.map(bus => ({
+          id: bus.id || bus.Id,
+          busName: bus.busName || bus.BusName,
+          busNumber: bus.busNumber || bus.BusNumber,
+          busType: bus.busType || bus.BusType,
+          totalSeats: bus.totalSeats || bus.TotalSeats,
+          femaleSeats: bus.femaleSeats || bus.FemaleSeats || 0,
+          maleSeats: bus.maleSeats || bus.MaleSeats || 0,
+          routeId: bus.routeId || bus.RouteId,
+          routeName: bus.routeName || bus.RouteName,
+          status: bus.status || bus.Status,
+          isAvailable: bus.isAvailable !== undefined ? bus.isAvailable : bus.IsAvailable,
+          rejectionReason: bus.rejectionReason || bus.RejectionReason
+        }));
+        
+        console.log('Mapped Buses Data:', this.allBuses);
+        
+        // Log seat counts for debugging
+        this.allBuses.forEach(bus => {
+          console.log(`Bus ${bus.busName}: Total=${bus.totalSeats}, Female=${bus.femaleSeats}, Male=${bus.maleSeats}`);
+        });
+        
+        // Filter active buses (Status 2 = Approved)
+        this.activeBuses = this.allBuses.filter(b => b.status === 2);
+        
         this.isLoading = false;
         this.cdr.detectChanges();
       },
@@ -123,6 +147,63 @@ export class OperatorBusManagement implements OnInit {
     }
   }
 
+  getStatusClass(status: number, isAvailable: boolean): string {
+    // Check status first, then isAvailable
+    switch (status) {
+      case 1: return 'pending';
+      case 2: 
+        // Only check isAvailable for approved buses
+        return (!isAvailable) ? 'disabled' : 'approved';
+      case 3: return 'disabled';
+      case 4: return 'rejected';
+      default: return 'unknown';
+    }
+  }
+
+  getBusStatusDisplay(status: number, isAvailable: boolean): string {
+    // Check status first, then isAvailable
+    switch (status) {
+      case 1: return 'Pending Approval';
+      case 2:
+        // Only check isAvailable for approved buses
+        return (!isAvailable) ? 'Disabled by Admin' : 'Active';
+      case 3: return 'Disabled by Admin';
+      case 4: return 'Rejected by Admin';
+      default: return 'Unknown';
+    }
+  }
+
+  getStatusMessage(status: number, isAvailable: boolean): { title: string; message: string; type: string } | null {
+    // Rejected status - HIGHEST PRIORITY (don't check isAvailable)
+    if (status === 4) {
+      return {
+        title: 'Bus Registration Rejected',
+        message: 'Your bus registration request has been rejected by the administrator. Please review the rejection reason below and contact the administrator if you need clarification.',
+        type: 'rejected'
+      };
+    }
+    
+    // Disabled status - Check both status 3 AND approved buses with isAvailable=false
+    if (status === 3 || (status === 2 && !isAvailable)) {
+      return {
+        title: 'Bus Disabled by Admin',
+        message: 'Your bus operator account has been disabled. This bus is temporarily unavailable for booking. All scheduled trips have been cancelled. Please contact the administrator for more information.',
+        type: 'disabled'
+      };
+    }
+    
+    // Pending status
+    if (status === 1) {
+      return {
+        title: 'Awaiting Admin Approval',
+        message: 'Your bus registration is pending approval from the administrator. You will be notified once it has been reviewed.',
+        type: 'pending'
+      };
+    }
+    
+    return null;
+  }
+
   toggleBusDetails(busId: string) {
     this.expandedBusId = this.expandedBusId === busId ? null : busId;
   }
@@ -131,16 +212,20 @@ export class OperatorBusManagement implements OnInit {
     const seats = [];
     const rows = Math.ceil(totalSeats / 4);
     
-    // If no specific allocation, use default distribution
-    // 30% female, 40% male, 30% general
-    if (femaleSeats === 0 && maleSeats === 0) {
-      femaleSeats = Math.floor(totalSeats * 0.3);
-      maleSeats = Math.floor(totalSeats * 0.4);
-    }
+    console.log(`[Seat Layout] Generating layout - Total: ${totalSeats}, Female: ${femaleSeats}, Male: ${maleSeats}`);
+    
+    // Use the actual values from database
+    // If values are undefined or null, default to 0
+    const actualFemaleSeats = femaleSeats || 0;
+    const actualMaleSeats = maleSeats || 0;
+    const generalSeats = totalSeats - actualFemaleSeats - actualMaleSeats;
+    
+    console.log(`[Seat Layout] Distribution - Female: ${actualFemaleSeats}, Male: ${actualMaleSeats}, General: ${generalSeats}`);
     
     let seatNumber = 1;
     let femaleCount = 0;
     let maleCount = 0;
+    let generalCount = 0;
     
     for (let row = 0; row < rows; row++) {
       const rowSeats = [];
@@ -150,14 +235,19 @@ export class OperatorBusManagement implements OnInit {
           let seatType = 'general';
           
           // Assign female seats first (typically front rows)
-          if (femaleCount < femaleSeats) {
+          if (femaleCount < actualFemaleSeats) {
             seatType = 'female';
             femaleCount++;
           } 
           // Then assign male seats
-          else if (maleCount < maleSeats) {
+          else if (maleCount < actualMaleSeats) {
             seatType = 'male';
             maleCount++;
+          }
+          // Remaining are general seats
+          else {
+            seatType = 'general';
+            generalCount++;
           }
           
           rowSeats.push({
@@ -171,6 +261,8 @@ export class OperatorBusManagement implements OnInit {
       
       seats.push(rowSeats);
     }
+    
+    console.log(`[Seat Layout] Final counts - Female: ${femaleCount}, Male: ${maleCount}, General: ${generalCount}`);
     
     return seats;
   }

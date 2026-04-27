@@ -34,6 +34,8 @@ public class GetPendingBusesQueryHandler : IRequestHandler<GetPendingBusesQuery,
                 BusName = b.BusName,
                 BusType = b.BusType,
                 TotalSeats = b.TotalSeats,
+                FemaleSeats = b.FemaleSeats,
+                MaleSeats = b.MaleSeats,
                 Status = b.Status
             })
             .ToListAsync(cancellationToken);

@@ -50,6 +50,22 @@ public class AdminController : ControllerBase
         return Ok(new { message = "Operator rejected successfully" });
     }
 
+    [HttpPost("enable-operator/{id}")]
+    public async Task<ActionResult> EnableOperator(Guid id)
+    {
+        var result = await _mediator.Send(new BusBooking.Application.Admin.Commands.EnableOperator.EnableOperatorCommand(id));
+        if (!result) return NotFound();
+        return Ok(new { message = "Operator enabled successfully" });
+    }
+
+    [HttpPost("disable-operator/{id}")]
+    public async Task<ActionResult> DisableOperator(Guid id)
+    {
+        var result = await _mediator.Send(new BusBooking.Application.Admin.Commands.DisableOperator.DisableOperatorCommand(id));
+        if (!result) return NotFound();
+        return Ok(new { message = "Operator disabled successfully" });
+    }
+
     // --- Station Management ---
     [HttpGet("stations")]
     public async Task<ActionResult> GetStations()
@@ -130,6 +146,14 @@ public class AdminController : ControllerBase
     public async Task<ActionResult> GetDashboardStats()
     {
         var result = await _mediator.Send(new BusBooking.Application.Admin.Queries.GetDashboardStats.GetDashboardStatsQuery());
+        return Ok(result);
+    }
+
+    // --- Revenue Management ---
+    [HttpGet("revenue")]
+    public async Task<ActionResult> GetRevenue([FromQuery] DateTime? startDate, [FromQuery] DateTime? endDate)
+    {
+        var result = await _mediator.Send(new BusBooking.Application.Admin.Queries.GetRevenue.GetRevenueQuery(startDate, endDate));
         return Ok(result);
     }
 }

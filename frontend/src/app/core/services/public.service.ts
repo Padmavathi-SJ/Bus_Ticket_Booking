@@ -42,6 +42,7 @@ export interface TripSearchResult {
   basePrice: number;
   bookedSeats: number;
   availableSeats: number;
+  isAvailable: boolean;
 }
 
 @Injectable({

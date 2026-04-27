@@ -28,6 +28,8 @@ public class CreateBookingDto
     public List<string> SeatNumbers { get; set; } = new();
     public PassengerDetailsDto PassengerDetails { get; set; } = new();
     public decimal TotalAmount { get; set; }
+    public string? PaymentMethod { get; set; } // Cash, UPI, Credit Card, etc.
+    public string? PaymentStatus { get; set; } // Paid or Not Paid
 }
 
 public class PassengerDetailsDto

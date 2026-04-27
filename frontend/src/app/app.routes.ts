@@ -11,7 +11,7 @@ import { AdminLayout } from './features/admin/admin-layout/admin-layout';
 import { OperatorLayout } from './features/operator/operator-layout/operator-layout';
 import { OperatorManagement } from './features/admin/operators/operators';
 import { RouteManagement } from './features/admin/routes/routes';
-import { StationManagement } from './features/admin/stations/stations';
+import { Revenue } from './features/admin/revenue/revenue';
 import { BusManagement as AdminBusManagement } from './features/admin/buses/buses';
 import { OperatorRouteManagement } from './features/operator/routes/routes';
 import { OperatorBusManagement } from './features/operator/buses/buses';
@@ -45,7 +45,7 @@ export const routes: Routes = [
       { path: 'operators', component: OperatorManagement },
       { path: 'buses', component: AdminBusManagement },
       { path: 'routes', component: RouteManagement },
-      { path: 'stations', component: StationManagement }
+      { path: 'revenue', component: Revenue }
     ]
   },
 

@@ -13,7 +13,9 @@ public record CreateBookingCommand(
     Guid? TripId,
     List<string> SeatNumbers,
     PassengerDetailsDto PassengerDetails,
-    decimal TotalAmount
+    decimal TotalAmount,
+    string? PaymentMethod,
+    string? PaymentStatus
 ) : IRequest<BookingConfirmationDto>;
 
 public class CreateBookingCommandHandler : IRequestHandler<CreateBookingCommand, BookingConfirmationDto>
@@ -135,6 +137,28 @@ public class CreateBookingCommandHandler : IRequestHandler<CreateBookingCommand,
             };
 
             _context.Bookings.Add(booking);
+
+            // Create payment record if payment information is provided
+            if (!string.IsNullOrEmpty(request.PaymentMethod) && !string.IsNullOrEmpty(request.PaymentStatus))
+            {
+                var paymentStatus = request.PaymentStatus == "Paid" 
+                    ? PaymentStatus.Success 
+                    : PaymentStatus.Pending;
+
+                var payment = new Payment
+                {
+                    Id = Guid.NewGuid(),
+                    BookingId = booking.Id,
+                    Amount = request.TotalAmount,
+                    Method = request.PaymentMethod,
+                    Status = paymentStatus,
+                    PaidAt = paymentStatus == PaymentStatus.Success ? DateTime.UtcNow : null,
+                    CreatedAt = DateTime.UtcNow,
+                    UpdatedAt = DateTime.UtcNow
+                };
+
+                _context.Payments.Add(payment);
+            }
 
             // Create booking seats
             foreach (var seatNumber in request.SeatNumbers)

@@ -20,26 +20,62 @@
             <mat-card-content>
               <div class="bus-header">
                 <span class="bus-name">{{bus.busName}}</span>
-                <span class="status-badge approved">Active</span>
+                <span class="status-badge" [class]="getStatusClass(bus.status, bus.isAvailable)">
+                  {{getBusStatusDisplay(bus.status, bus.isAvailable)}}
+                </span>
               </div>
               <div class="bus-details">
                 <p><mat-icon>confirmation_number</mat-icon> {{bus.busNumber}}</p>
                 <p><mat-icon>map</mat-icon> {{bus.routeName}}</p>
                 <p><mat-icon>event_seat</mat-icon> {{bus.totalSeats}} Seats</p>
               </div>
+
+              <!-- Status Notice Box (Disabled, Rejected, or Pending) -->
+              <div class="status-notice" 
+                   *ngIf="getStatusMessage(bus.status, bus.isAvailable) as statusMsg"
+                   [ngClass]="statusMsg.type + '-notice'">
+                <mat-icon>
+                  {{statusMsg.type === 'disabled' ? 'block' : statusMsg.type === 'rejected' ? 'cancel' : 'schedule'}}
+                </mat-icon>
+                <div>
+                  <strong>{{statusMsg.title}}</strong>
+                  <p>{{statusMsg.message}}</p>
+                </div>
+              </div>
+
+              <!-- Rejection Reason Box (Only for Rejected) -->
+              <div class="rejection-reason-box" *ngIf="bus.status === 4 && bus.rejectionReason">
+                <div class="reason-header">
+                  <mat-icon>info</mat-icon>
+                  <strong>Rejection Reason:</strong>
+                </div>
+                <p class="reason-text">{{bus.rejectionReason}}</p>
+              </div>
               
               <div class="bus-actions">
-                <button mat-raised-button color="primary" class="schedule-btn" (click)="openScheduleDialog(bus)">
+                <button 
+                  mat-raised-button 
+                  color="primary" 
+                  class="schedule-btn" 
+                  (click)="openScheduleDialog(bus)"
+                  [disabled]="bus.status === 3 || !bus.isAvailable">
                   <mat-icon>event</mat-icon>
                   Schedule Trip
                 </button>
                 
-                <button mat-raised-button color="accent" class="view-schedules-btn" (click)="openTripsDialog(bus)">
+                <button 
+                  mat-raised-button 
+                  color="accent" 
+                  class="view-schedules-btn" 
+                  (click)="openTripsDialog(bus)">
                   <mat-icon>calendar_view_month</mat-icon>
                   View Schedules
                 </button>
                 
-                <button mat-raised-button class="view-bookings-btn" (click)="openBookingsDialog(bus)">
+                <button 
+                  mat-raised-button 
+                  class="view-bookings-btn" 
+                  (click)="openBookingsDialog(bus)">
                   <mat-icon>receipt_long</mat-icon>
                   View Bookings
                 </button>
@@ -137,8 +173,8 @@
             <mat-card-content>
               <div class="bus-header">
                 <span class="bus-name">{{bus.busName}}</span>
-                <span class="status-badge" [class]="getStatusLabel(bus.status).toLowerCase()">
-                  {{getStatusLabel(bus.status)}}
+                <span class="status-badge" [class]="getStatusClass(bus.status, bus.isAvailable)">
+                  {{getBusStatusDisplay(bus.status, bus.isAvailable)}}
                 </span>
               </div>
               <div class="bus-details">
@@ -146,8 +182,27 @@
                 <p><mat-icon>map</mat-icon> {{bus.routeName}}</p>
                 <p><mat-icon>event_seat</mat-icon> {{bus.totalSeats}} Seats</p>
               </div>
-              <div class="rejection-box" *ngIf="bus.status === 4">
-                <strong>Reason:</strong> {{bus.rejectionReason || 'Contact Admin'}}
+
+              <!-- Status Notice Box (Disabled, Rejected, or Pending) -->
+              <div class="status-notice" 
+                   *ngIf="getStatusMessage(bus.status, bus.isAvailable) as statusMsg"
+                   [ngClass]="statusMsg.type + '-notice'">
+                <mat-icon>
+                  {{statusMsg.type === 'disabled' ? 'block' : statusMsg.type === 'rejected' ? 'cancel' : 'schedule'}}
+                </mat-icon>
+                <div>
+                  <strong>{{statusMsg.title}}</strong>
+                  <p>{{statusMsg.message}}</p>
+                </div>
+              </div>
+
+              <!-- Rejection Reason Box (Only for Rejected) -->
+              <div class="rejection-reason-box" *ngIf="bus.status === 4 && bus.rejectionReason">
+                <div class="reason-header">
+                  <mat-icon>info</mat-icon>
+                  <strong>Rejection Reason:</strong>
+                </div>
+                <p class="reason-text">{{bus.rejectionReason}}</p>
               </div>
 
               <button mat-stroked-button color="primary" class="view-layout-btn" (click)="toggleBusDetails(bus.id)">

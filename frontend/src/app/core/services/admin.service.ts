@@ -79,6 +79,14 @@ export class AdminService {
     });
   }
 
+  enableOperator(id: string): Observable<any> {
+    return this.http.post(`${this.apiUrl}/enable-operator/${id}`, {});
+  }
+
+  disableOperator(id: string): Observable<any> {
+    return this.http.post(`${this.apiUrl}/disable-operator/${id}`, {});
+  }
+
   // Stations
   getStations(): Observable<Station[]> {
     return this.http.get<Station[]>(`${this.apiUrl}/stations`);

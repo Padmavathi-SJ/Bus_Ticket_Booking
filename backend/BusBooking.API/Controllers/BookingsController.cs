@@ -73,7 +73,9 @@ public class BookingsController : ControllerBase
                 dto.TripId,
                 dto.SeatNumbers,
                 dto.PassengerDetails,
-                dto.TotalAmount
+                dto.TotalAmount,
+                dto.PaymentMethod,
+                dto.PaymentStatus
             );
 
             var result = await _mediator.Send(command);
