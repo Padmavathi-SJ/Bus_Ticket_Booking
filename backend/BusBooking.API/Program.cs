@@ -5,9 +5,16 @@ using BusBooking.Application;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
+using BusBooking.API.Filters;
 using System.Text;
 
 var builder = WebApplication.CreateBuilder(args);
+
+// Add controllers with global exception filter
+builder.Services.AddControllers(options =>
+{
+    options.Filters.Add<GlobalExceptionFilter>(); // ← Add this
+});
 
 // ─── Database (via Infrastructure layer) ─────────────────────────────────────
 builder.Services.AddInfrastructure(builder.Configuration);

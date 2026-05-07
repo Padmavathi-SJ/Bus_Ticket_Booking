@@ -7,6 +7,9 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace BusBooking.API.Controllers;
 
+/// <summary>
+/// Authentication Controller - Handles login and registration
+/// </summary>
 [ApiController]
 [Route("api/[controller]")]
 public class AuthController : ControllerBase
@@ -18,65 +21,56 @@ public class AuthController : ControllerBase
         _mediator = mediator;
     }
 
+    /// <summary>
+    /// Admin login
+    /// </summary>
     [HttpPost("admin-login")]
     public async Task<ActionResult<AuthResponseDto>> AdminLogin([FromBody] LoginCommand command)
     {
         command.Role = BusBooking.Domain.Enums.UserRole.Admin;
-        return await ProcessLogin(command);
+        var response = await _mediator.Send(command);
+        return Ok(response);
     }
 
+    /// <summary>
+    /// Customer/User login
+    /// </summary>
     [HttpPost("user-login")]
     public async Task<ActionResult<AuthResponseDto>> UserLogin([FromBody] LoginCommand command)
     {
         command.Role = BusBooking.Domain.Enums.UserRole.Customer;
-        return await ProcessLogin(command);
+        var response = await _mediator.Send(command);
+        return Ok(response);
     }
 
+    /// <summary>
+    /// Bus Operator login
+    /// </summary>
     [HttpPost("operator-login")]
     public async Task<ActionResult<AuthResponseDto>> OperatorLogin([FromBody] LoginCommand command)
     {
         command.Role = BusBooking.Domain.Enums.UserRole.BusOperator;
-        return await ProcessLogin(command);
+        var response = await _mediator.Send(command);
+        return Ok(response);
     }
 
-    private async Task<ActionResult<AuthResponseDto>> ProcessLogin(LoginCommand command)
-    {
-        try
-        {
-            var response = await _mediator.Send(command);
-            return Ok(response);
-        }
-        catch (UnauthorizedAccessException ex)
-        {
-            return Unauthorized(new { message = ex.Message });
-        }
-    }
-
+    /// <summary>
+    /// Register a new customer
+    /// </summary>
     [HttpPost("user-register")]
     public async Task<ActionResult> RegisterCustomer([FromBody] RegisterCustomerCommand command)
     {
-        try
-        {
-            await _mediator.Send(command);
-            return Ok(new { message = "Registration successful" });
-        }
-        catch (Exception ex)
-        {
-            return BadRequest(new { message = ex.Message });
-        }
+        await _mediator.Send(command);
+        return Ok(new { message = "Registration successful" });
     }
 
+    /// <summary>
+    /// Register a new bus operator (requires admin approval)
+    /// </summary>
     [HttpPost("operator-register")]
     public async Task<ActionResult> RegisterOperator([FromBody] RegisterOperatorCommand command)
     {
-        try
-        {
-            await _mediator.Send(command);
-            return Ok(new { message = "Operator registration successful. Waiting for admin approval." });
-        }
-        catch (Exception ex)
-        {
-            return BadRequest(new { message = ex.Message });
-        }
+        await _mediator.Send(command);
+        return Ok(new { message = "Operator registration successful. Waiting for admin approval." });
     }
 }

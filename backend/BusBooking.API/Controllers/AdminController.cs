@@ -8,9 +8,13 @@ using BusBooking.Domain.Enums;
 
 namespace BusBooking.API.Controllers;
 
+/// <summary>
+/// Admin Controller - Handles all administrative operations
+/// All endpoints require Admin role
+/// </summary>
 [ApiController]
 [Route("api/[controller]")]
-[Authorize(Roles = "Admin")] // Only admins can access these endpoints
+[Authorize(Roles = "Admin")]
 public class AdminController : ControllerBase
 {
     private readonly IMediator _mediator;
@@ -20,6 +24,9 @@ public class AdminController : ControllerBase
         _mediator = mediator;
     }
 
+    /// <summary>
+    /// Get pending operator registration requests
+    /// </summary>
     [HttpGet("operator-requests")]
     public async Task<ActionResult> GetPendingOperators()
     {
@@ -27,6 +34,9 @@ public class AdminController : ControllerBase
         return Ok(result);
     }
 
+    /// <summary>
+    /// Get all operators with optional status filter
+    /// </summary>
     [HttpGet("operators")]
     public async Task<ActionResult> GetAllOperators([FromQuery] OperatorStatus? status)
     {
@@ -34,35 +44,44 @@ public class AdminController : ControllerBase
         return Ok(result);
     }
 
+    /// <summary>
+    /// Approve an operator registration
+    /// </summary>
     [HttpPost("approve-operator/{id}")]
     public async Task<ActionResult> ApproveOperator(Guid id)
     {
         var result = await _mediator.Send(new ApproveOperatorCommand(id));
-        if (!result) return NotFound();
+        // If result is false, handler throws KeyNotFoundException
         return Ok(new { message = "Operator approved successfully" });
     }
 
+    /// <summary>
+    /// Reject an operator registration
+    /// </summary>
     [HttpPost("reject-operator/{id}")]
     public async Task<ActionResult> RejectOperator(Guid id, [FromBody] string reason)
     {
         var result = await _mediator.Send(new RejectOperatorCommand(id, reason));
-        if (!result) return NotFound();
         return Ok(new { message = "Operator rejected successfully" });
     }
 
+    /// <summary>
+    /// Enable an operator account
+    /// </summary>
     [HttpPost("enable-operator/{id}")]
     public async Task<ActionResult> EnableOperator(Guid id)
     {
         var result = await _mediator.Send(new BusBooking.Application.Admin.Commands.EnableOperator.EnableOperatorCommand(id));
-        if (!result) return NotFound();
         return Ok(new { message = "Operator enabled successfully" });
     }
 
+    /// <summary>
+    /// Disable an operator account
+    /// </summary>
     [HttpPost("disable-operator/{id}")]
     public async Task<ActionResult> DisableOperator(Guid id)
     {
         var result = await _mediator.Send(new BusBooking.Application.Admin.Commands.DisableOperator.DisableOperatorCommand(id));
-        if (!result) return NotFound();
         return Ok(new { message = "Operator disabled successfully" });
     }
 
@@ -122,7 +141,6 @@ public class AdminController : ControllerBase
     public async Task<ActionResult> ApproveBus(Guid id)
     {
         var result = await _mediator.Send(new BusBooking.Application.Admin.Commands.ApproveBus.ApproveBusCommand(id));
-        if (!result) return NotFound();
         return Ok(new { message = "Bus approved successfully" });
     }
 
@@ -130,7 +148,6 @@ public class AdminController : ControllerBase
     public async Task<ActionResult> RejectBus(Guid id, [FromBody] string reason)
     {
         var result = await _mediator.Send(new BusBooking.Application.Admin.Commands.RejectBus.RejectBusCommand(id, reason));
-        if (!result) return NotFound();
         return Ok(new { message = "Bus rejected successfully" });
     }
 

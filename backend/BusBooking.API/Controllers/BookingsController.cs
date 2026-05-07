@@ -11,6 +11,9 @@ using System.Security.Claims;
 
 namespace BusBooking.API.Controllers;
 
+/// <summary>
+/// Bookings Controller - Handles all booking operations
+/// </summary>
 [ApiController]
 [Route("api/[controller]")]
 public class BookingsController : ControllerBase
@@ -38,18 +41,8 @@ public class BookingsController : ControllerBase
     [HttpGet("booked-seats/trip/{tripId}")]
     public async Task<ActionResult<List<string>>> GetBookedSeatsForTrip(Guid tripId)
     {
-        try
-        {
-            Console.WriteLine($"[DEBUG-BOOKED-SEATS] Getting booked seats for trip: {tripId}");
-            var result = await _mediator.Send(new GetBookedSeatsForTripQuery(tripId));
-            Console.WriteLine($"[DEBUG-BOOKED-SEATS] Found {result.Count} booked seats");
-            return Ok(result);
-        }
-        catch (Exception ex)
-        {
-            Console.WriteLine($"[ERROR-BOOKED-SEATS] Failed: {ex.Message}");
-            return BadRequest(new { message = ex.Message });
-        }
+        var result = await _mediator.Send(new GetBookedSeatsForTripQuery(tripId));
+        return Ok(result);
     }
 
     /// <summary>
@@ -59,32 +52,25 @@ public class BookingsController : ControllerBase
     [Authorize]
     public async Task<ActionResult<BookingConfirmationDto>> CreateBooking([FromBody] CreateBookingDto dto)
     {
-        try
+        var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+        if (string.IsNullOrEmpty(userId))
         {
-            var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
-            if (string.IsNullOrEmpty(userId))
-            {
-                return Unauthorized(new { message = "User not authenticated" });
-            }
-
-            var command = new CreateBookingCommand(
-                Guid.Parse(userId),
-                dto.BusId,
-                dto.TripId,
-                dto.SeatNumbers,
-                dto.PassengerDetails,
-                dto.TotalAmount,
-                dto.PaymentMethod,
-                dto.PaymentStatus
-            );
-
-            var result = await _mediator.Send(command);
-            return Ok(result);
+            throw new UnauthorizedAccessException("User not authenticated");
         }
-        catch (Exception ex)
-        {
-            return BadRequest(new { message = ex.Message });
-        }
+
+        var command = new CreateBookingCommand(
+            Guid.Parse(userId),
+            dto.BusId,
+            dto.TripId,
+            dto.SeatNumbers,
+            dto.PassengerDetails,
+            dto.TotalAmount,
+            dto.PaymentMethod,
+            dto.PaymentStatus
+        );
+
+        var result = await _mediator.Send(command);
+        return Ok(result);
     }
 
     /// <summary>
@@ -94,27 +80,14 @@ public class BookingsController : ControllerBase
     [Authorize]
     public async Task<ActionResult<List<BookingDto>>> GetMyBookings()
     {
-        try
+        var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+        if (string.IsNullOrEmpty(userId))
         {
-            var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
-            if (string.IsNullOrEmpty(userId))
-            {
-                Console.WriteLine("[BookingsController] User not authenticated");
-                return Unauthorized(new { message = "User not authenticated" });
-            }
+            throw new UnauthorizedAccessException("User not authenticated");
+        }
 
-            Console.WriteLine($"[BookingsController] Fetching bookings for user: {userId}");
-            var result = await _mediator.Send(new GetUserBookingsQuery(Guid.Parse(userId)));
-            Console.WriteLine($"[BookingsController] Found {result.Count} bookings for user: {userId}");
-            
-            return Ok(result);
-        }
-        catch (Exception ex)
-        {
-            Console.WriteLine($"[BookingsController] Error: {ex.Message}");
-            Console.WriteLine($"[BookingsController] Stack trace: {ex.StackTrace}");
-            return BadRequest(new { message = ex.Message });
-        }
+        var result = await _mediator.Send(new GetUserBookingsQuery(Guid.Parse(userId)));
+        return Ok(result);
     }
 
     /// <summary>
@@ -124,24 +97,13 @@ public class BookingsController : ControllerBase
     [Authorize]
     public async Task<ActionResult<CancelBookingResult>> CancelBooking(Guid id)
     {
-        try
+        var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+        if (string.IsNullOrEmpty(userId))
         {
-            var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
-            if (string.IsNullOrEmpty(userId))
-            {
-                return Unauthorized(new { message = "User not authenticated" });
-            }
+            throw new UnauthorizedAccessException("User not authenticated");
+        }
 
-            var result = await _mediator.Send(new CancelBookingCommand(id, Guid.Parse(userId)));
-            return Ok(result);
-        }
-        catch (UnauthorizedAccessException ex)
-        {
-            return Forbid(ex.Message);
-        }
-        catch (Exception ex)
-        {
-            return BadRequest(new { message = ex.Message });
-        }
+        var result = await _mediator.Send(new CancelBookingCommand(id, Guid.Parse(userId)));
+        return Ok(result);
     }
 }
