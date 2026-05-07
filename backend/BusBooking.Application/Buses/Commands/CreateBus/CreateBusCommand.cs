@@ -1,3 +1,4 @@
+
 using BusBooking.Application.Common.Interfaces;
 using BusBooking.Domain.Entities;
 using BusBooking.Domain.Enums;
@@ -44,6 +45,42 @@ public class CreateBusCommandHandler : IRequestHandler<CreateBusCommand, Guid>
         {
             var user = await _context.Users.FindAsync(new object[] { request.OperatorId }, cancellationToken);
             
+
+// Application/Buses/Commands/CreateBusCommand.cs
+using BusBooking.Application.Commands;
+
+namespace BusBooking.Application.Buses.Commands.CreateBus;
+
+public class CreateBusCommand : BaseBusCommand
+{
+    public Guid OperatorId { get; set; }  // Required for operator
+    
+    protected override BusStatus GetInitialStatus() 
+        => BusStatus.Pending;  // Operator's buses need approval
+    
+    protected override bool GetInitialAvailability() 
+        => false;  // Not available until approved
+    
+    protected override Guid? GetOperatorId() 
+        => OperatorId;  // Must be linked to operator account
+}
+
+// Handler with operator-specific validation
+public class CreateBusCommandHandler : BaseBusCommandHandler<CreateBusCommand>
+{
+    public CreateBusCommandHandler(IAppDbContext context) : base(context) { }
+    
+    // Override to add operator validation
+    protected override async Task BeforeCreateAsync(CreateBusCommand request, CancellationToken ct)
+    {
+        var busOperator = await _context.BusOperators
+            .Include(o => o.User)
+            .FirstOrDefaultAsync(o => o.UserId == request.OperatorId, ct);
+        
+        if (busOperator == null)
+        {
+            // Self-healing logic
+            var user = await _context.Users.FindAsync(new object[] { request.OperatorId }, ct);
             if (user != null && user.Role == UserRole.BusOperator)
             {
                 busOperator = new BusOperator
@@ -89,3 +126,20 @@ public class CreateBusCommandHandler : IRequestHandler<CreateBusCommand, Guid>
         return bus.Id;
     }
 }
+
+                    CompanyName = user.FullName + " Transport",
+                    LicenseNumber = "PENDING",
+                    Address = "Default Address",
+                    Status = OperatorStatus.Approved,
+                    CreatedAt = DateTime.UtcNow
+                };
+                _context.BusOperators.Add(busOperator);
+                await _context.SaveChangesAsync(ct);
+            }
+        }
+        
+        if (busOperator == null)
+            throw new Exception($"Unauthorized: No operator profile linked to User ID {request.OperatorId}");
+    }
+}
+

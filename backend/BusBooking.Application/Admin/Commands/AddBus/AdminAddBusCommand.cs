@@ -1,3 +1,4 @@
+
 using BusBooking.Application.Common.Interfaces;
 using BusBooking.Domain.Entities;
 using BusBooking.Domain.Enums;
@@ -54,4 +55,32 @@ public class AdminAddBusCommandHandler : IRequestHandler<AdminAddBusCommand, Gui
 
         return bus.Id;
     }
+}
+
+// Application/Commands/Admin/AdminAddBusCommand.cs
+using BusBooking.Application.Commands;
+
+namespace BusBooking.Application.Admin.Commands.AddBus;
+
+public class AdminAddBusCommand : BaseBusCommand
+{
+    public Guid? OperatorId { get; set; }  // Admin can specify operator
+    
+    protected override BusStatus GetInitialStatus() 
+        => BusStatus.Approved;  // Admin's buses are auto-approved
+    
+    protected override bool GetInitialAvailability() 
+        => true;  // Admin's buses are immediately available
+    
+    protected override Guid? GetOperatorId() 
+        => OperatorId;  // Admin can assign to operator or null for system bus
+}
+
+// Handler becomes VERY simple!
+public class AdminAddBusCommandHandler : BaseBusCommandHandler<AdminAddBusCommand>
+{
+    public AdminAddBusCommandHandler(IAppDbContext context) : base(context) { }
+    
+    // No need to override anything unless we need special logic
+    // The base handler does all the work!
 }
